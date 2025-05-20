@@ -1,0 +1,20 @@
+{
+  "http": {
+    "port": 1739,
+    "protocols": {
+      "http_1": true,
+      "http_2": false
+    },
+    "timeouts": {
+      "read_request": 10,
+      "read_request_header": 5,
+      "response_write": 15,
+      "idle": 30
+    },
+    "max_header_bytes": 1048576
+  },
+  "log": {
+    "level": "info",
+    "format": "json"
+  }
+}

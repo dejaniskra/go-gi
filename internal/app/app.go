@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/dejaniskra/go-gi/internal/config"
 	"github.com/dejaniskra/go-gi/internal/logger"
 )
 
@@ -66,13 +67,16 @@ func (a *Application) Run() error {
 		handler = a.middlewares[i](handler)
 	}
 
+	cfg := config.LoadConfig("config.json")
+
 	srv := &http.Server{
-		Addr:           ":8080",
-		Handler:        handler,
-		ReadTimeout:    5 * time.Second,
-		WriteTimeout:   10 * time.Second,
-		IdleTimeout:    15 * time.Second,
-		MaxHeaderBytes: 1 << 20,
+		Addr:              ":" + fmt.Sprintf("%d", *cfg.Http.Port),
+		Handler:           handler,
+		ReadTimeout:       time.Duration(*cfg.Http.Timeouts.ReadRequest) * time.Second,
+		ReadHeaderTimeout: time.Duration(*cfg.Http.Timeouts.ReadRequestHeader) * time.Second,
+		WriteTimeout:      time.Duration(*cfg.Http.Timeouts.ResponseWrite) * time.Second,
+		IdleTimeout:       time.Duration(*cfg.Http.Timeouts.Idle) * time.Second,
+		MaxHeaderBytes:    *cfg.Http.MaxHeaderBytes,
 	}
 
 	fmt.Printf("🚀 Server running on %s\n", srv.Addr)

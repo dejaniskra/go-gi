@@ -20,7 +20,29 @@ const (
 )
 
 func (l Level) String() string {
-	return [...]string{"DEBUG", "INFO", "WARN", "ERROR"}[l]
+	return [...]string{"debug", "info", "warn", "error"}[l]
+}
+
+func (l *Level) UnmarshalJSON(data []byte) error {
+	var s string
+	if err := json.Unmarshal(data, &s); err != nil {
+		return err
+	}
+
+	switch s {
+	case "debug":
+		*l = DEBUG
+	case "info":
+		*l = INFO
+	case "warn":
+		*l = WARN
+	case "error":
+		*l = ERROR
+	default:
+		return fmt.Errorf("invalid log level: %s", s)
+	}
+
+	return nil
 }
 
 type Format int
@@ -29,6 +51,24 @@ const (
 	TEXT Format = iota
 	JSON
 )
+
+func (f *Format) UnmarshalJSON(data []byte) error {
+	var s string
+	if err := json.Unmarshal(data, &s); err != nil {
+		return err
+	}
+
+	switch s {
+	case "json":
+		*f = JSON
+	case "text":
+		*f = TEXT
+	default:
+		return fmt.Errorf("invalid log format: %s", s)
+	}
+
+	return nil
+}
 
 type Field struct {
 	Key   string
