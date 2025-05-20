@@ -3,19 +3,22 @@ package main
 import (
 	"github.com/dejaniskra/go-gi/handlers"
 	"github.com/dejaniskra/go-gi/internal/app"
+	"github.com/dejaniskra/go-gi/internal/logger"
+	"github.com/dejaniskra/go-gi/internal/middleware"
 )
 
 func main() {
-	a := app.NewApplication()
+	application := app.NewApplication()
 
-	// application.SetLogger(logger.INFO, logger.JSON)
-	// application.Use(middleware.RecoverMiddleware)
-	// application.Use(middleware.RequestIDMiddleware)
+	application.SetLogger(logger.INFO, logger.JSON)
 
-	a.Get("/hello", handlers.HelloHandler(a))
-	a.Get("/hello/:id", handlers.GetUserHandler(a))
+	application.Use(middleware.RecoverMiddleware)
+	application.Use(middleware.RequestIDMiddleware)
 
-	err := a.Run()
+	application.AddRoute(app.GET, "/hello", handlers.Hello)
+	application.AddRoute(app.GET, "/hello/:id", handlers.GetUser)
+
+	err := application.Run()
 
 	if err != nil {
 		panic("failed to start server: " + err.Error())

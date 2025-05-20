@@ -60,11 +60,11 @@ func New(level Level, format Format) *Logger {
 	return &Logger{level: level, format: format, out: os.Stdout}
 }
 
-func (l *Logger) Log(level Level, msg string, fields ...Field) {
-	l.LogCtx(context.Background(), level, msg, fields...)
+func (l *Logger) log(level Level, msg string, fields ...Field) {
+	l.logCtx(context.Background(), level, msg, fields...)
 }
 
-func (l *Logger) LogCtx(ctx context.Context, level Level, msg string, fields ...Field) {
+func (l *Logger) logCtx(ctx context.Context, level Level, msg string, fields ...Field) {
 	if level < l.level {
 		return
 	}
@@ -101,36 +101,36 @@ func (l *Logger) LogCtx(ctx context.Context, level Level, msg string, fields ...
 	}
 }
 
-func (l *Logger) Debug(msg string, fields ...Field) {
-	l.Log(DEBUG, msg, fields...)
+func (l *Logger) debug(msg string, fields ...Field) {
+	l.log(DEBUG, msg, fields...)
 }
 
-func (l *Logger) Info(msg string, fields ...Field) {
-	l.Log(INFO, msg, fields...)
+func (l *Logger) info(msg string, fields ...Field) {
+	l.log(INFO, msg, fields...)
 }
 
-func (l *Logger) Warn(msg string, fields ...Field) {
-	l.Log(WARN, msg, fields...)
+func (l *Logger) warn(msg string, fields ...Field) {
+	l.log(WARN, msg, fields...)
 }
 
-func (l *Logger) Error(msg string, fields ...Field) {
-	l.Log(ERROR, msg, fields...)
+func (l *Logger) error(msg string, fields ...Field) {
+	l.log(ERROR, msg, fields...)
 }
 
-func (l *Logger) DebugCtx(ctx context.Context, msg string, fields ...Field) {
-	l.LogCtx(ctx, DEBUG, msg, fields...)
+func (l *Logger) debugCtx(ctx context.Context, msg string, fields ...Field) {
+	l.logCtx(ctx, DEBUG, msg, fields...)
 }
 
-func (l *Logger) InfoCtx(ctx context.Context, msg string, fields ...Field) {
-	l.LogCtx(ctx, INFO, msg, fields...)
+func (l *Logger) infoCtx(ctx context.Context, msg string, fields ...Field) {
+	l.logCtx(ctx, INFO, msg, fields...)
 }
 
-func (l *Logger) WarnCtx(ctx context.Context, msg string, fields ...Field) {
-	l.LogCtx(ctx, WARN, msg, fields...)
+func (l *Logger) warnCtx(ctx context.Context, msg string, fields ...Field) {
+	l.logCtx(ctx, WARN, msg, fields...)
 }
 
-func (l *Logger) ErrorCtx(ctx context.Context, msg string, fields ...Field) {
-	l.LogCtx(ctx, ERROR, msg, fields...)
+func (l *Logger) errorCtx(ctx context.Context, msg string, fields ...Field) {
+	l.logCtx(ctx, ERROR, msg, fields...)
 }
 
 var defaultLogger *Logger
@@ -141,48 +141,48 @@ func InitGlobal(level Level, format Format) {
 
 func Debug(msg string, fields ...Field) {
 	if defaultLogger != nil {
-		defaultLogger.Debug(msg, fields...)
+		defaultLogger.debug(msg, fields...)
 	}
 }
 
 func Info(msg string, fields ...Field) {
 	if defaultLogger != nil {
-		defaultLogger.Info(msg, fields...)
+		defaultLogger.info(msg, fields...)
 	}
 }
 
 func Warn(msg string, fields ...Field) {
 	if defaultLogger != nil {
-		defaultLogger.Warn(msg, fields...)
+		defaultLogger.warn(msg, fields...)
 	}
 }
 
 func Error(msg string, fields ...Field) {
 	if defaultLogger != nil {
-		defaultLogger.Error(msg, fields...)
+		defaultLogger.error(msg, fields...)
 	}
 }
 
 func DebugCtx(ctx context.Context, msg string, fields ...Field) {
 	if defaultLogger != nil {
-		defaultLogger.DebugCtx(ctx, msg, fields...)
+		defaultLogger.debugCtx(ctx, msg, fields...)
 	}
 }
 
 func InfoCtx(ctx context.Context, msg string, fields ...Field) {
 	if defaultLogger != nil {
-		defaultLogger.InfoCtx(ctx, msg, fields...)
+		defaultLogger.infoCtx(ctx, msg, fields...)
 	}
 }
 
 func WarnCtx(ctx context.Context, msg string, fields ...Field) {
 	if defaultLogger != nil {
-		defaultLogger.WarnCtx(ctx, msg, fields...)
+		defaultLogger.warnCtx(ctx, msg, fields...)
 	}
 }
 
 func ErrorCtx(ctx context.Context, msg string, fields ...Field) {
 	if defaultLogger != nil {
-		defaultLogger.ErrorCtx(ctx, msg, fields...)
+		defaultLogger.errorCtx(ctx, msg, fields...)
 	}
 }

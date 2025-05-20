@@ -2,88 +2,68 @@ package app
 
 import (
 	"context"
-	"encoding/json"
+	"fmt"
 	"net/http"
-	"strings"
 	"time"
+
+	"github.com/dejaniskra/go-gi/internal/logger"
 )
 
-type contextKey string
+type HTTPMethod string
 
-const pathParamsKey = contextKey("pathParams")
+const (
+	GET     HTTPMethod = "GET"
+	POST    HTTPMethod = "POST"
+	PUT     HTTPMethod = "PUT"
+	DELETE  HTTPMethod = "DELETE"
+	PATCH   HTTPMethod = "PATCH"
+	OPTIONS HTTPMethod = "OPTIONS"
+	HEAD    HTTPMethod = "HEAD"
+)
+
+type routeKey struct {
+	Method string
+	Path   string
+}
 
 type Application struct {
-	routes      []route
+	routes      map[routeKey]http.HandlerFunc
 	middlewares []func(http.Handler) http.Handler
 }
 
-type route struct {
-	method  string
-	pattern string
-	handler http.HandlerFunc
-}
-
 func NewApplication() *Application {
-	return &Application{}
+	return &Application{
+		routes: make(map[routeKey]http.HandlerFunc),
+	}
+}
+func (a *Application) SetLogger(level logger.Level, format logger.Format) {
+	logger.InitGlobal(level, format)
 }
 
-func (app *Application) Get(pattern string, handler http.HandlerFunc) {
-	app.routes = append(app.routes, route{
-		method:  "GET",
-		pattern: pattern,
-		handler: handler,
-	})
-}
-func (app *Application) Post(pattern string, handler http.HandlerFunc) {
-	app.routes = append(app.routes, route{
-		method:  "POST",
-		pattern: pattern,
-		handler: handler,
-	})
+func (a *Application) AddRoute(method HTTPMethod, path string, handler http.HandlerFunc) {
+	a.routes[routeKey{Method: string(method), Path: path}] = handler
 }
 
-func (app *Application) Patch(pattern string, handler http.HandlerFunc) {
-	app.routes = append(app.routes, route{
-		method:  "PATCH",
-		pattern: pattern,
-		handler: handler,
-	})
+func (a *Application) Use(mw func(http.Handler) http.Handler) {
+	a.middlewares = append(a.middlewares, mw)
 }
 
-func (app *Application) Put(pattern string, handler http.HandlerFunc) {
-	app.routes = append(app.routes, route{
-		method:  "PUT",
-		pattern: pattern,
-		handler: handler,
-	})
-}
-
-func (app *Application) Delete(pattern string, handler http.HandlerFunc) {
-	app.routes = append(app.routes, route{
-		method:  "DELETE",
-		pattern: pattern,
-		handler: handler,
-	})
-}
-
-func (app *Application) Use(mw func(http.Handler) http.Handler) {
-	app.middlewares = append(app.middlewares, mw)
-}
-
-func (app *Application) Run() error {
+func (a *Application) Run() error {
 	router := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		handler, params := app.matchRoute(r)
-		if handler != nil {
-			ctx := context.WithValue(r.Context(), pathParamsKey, params)
-			handler(w, r.WithContext(ctx))
-			return
+		for key, handler := range a.routes {
+			params, matched := matchRoute(key.Path, r.URL.Path)
+			if matched && key.Method == r.Method {
+				ctx := context.WithValue(r.Context(), "pathParams", params)
+				handler(w, r.WithContext(ctx))
+				return
+			}
 		}
 		http.NotFound(w, r)
 	})
 
 	var handler http.Handler = router
-	for i := len(app.middlewares) - 1; i >= 0; i-- {
-		handler = app.middlewares[i](handler)
+	for i := len(a.middlewares) - 1; i >= 0; i-- {
+		handler = a.middlewares[i](handler)
 	}
 
 	srv := &http.Server{
@@ -95,56 +75,6 @@ func (app *Application) Run() error {
 		MaxHeaderBytes: 1 << 20,
 	}
 
-	println("🚀 Server running on http://localhost:8080")
+	fmt.Printf("🚀 Server running on %s\n", srv.Addr)
 	return srv.ListenAndServe()
-}
-
-// -- Path parameter logic --
-
-func (app *Application) matchRoute(r *http.Request) (http.HandlerFunc, map[string]string) {
-	for _, rt := range app.routes {
-		if r.Method != rt.method {
-			continue
-		}
-		params, ok := matchPath(rt.pattern, r.URL.Path)
-		if ok {
-			return rt.handler, params
-		}
-	}
-	return nil, nil
-}
-
-func matchPath(pattern, path string) (map[string]string, bool) {
-	patternParts := strings.Split(strings.Trim(pattern, "/"), "/")
-	pathParts := strings.Split(strings.Trim(path, "/"), "/")
-
-	if len(patternParts) != len(pathParts) {
-		return nil, false
-	}
-
-	params := make(map[string]string)
-	for i := 0; i < len(patternParts); i++ {
-		if strings.HasPrefix(patternParts[i], ":") {
-			params[patternParts[i][1:]] = pathParts[i]
-		} else if patternParts[i] != pathParts[i] {
-			return nil, false
-		}
-	}
-	return params, true
-}
-
-// -- Helpers --
-
-func (app *Application) Param(r *http.Request, key string) string {
-	params, ok := r.Context().Value(pathParamsKey).(map[string]string)
-	if !ok {
-		return ""
-	}
-	return params[key]
-}
-
-func (app *Application) JSON(w http.ResponseWriter, data any, status int) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(status)
-	json.NewEncoder(w).Encode(data)
 }
