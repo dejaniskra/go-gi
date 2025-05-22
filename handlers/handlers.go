@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/dejaniskra/go-gi/internal/app"
+	internalhttp "github.com/dejaniskra/go-gi/internal/http"
 )
 
 func Hello(w http.ResponseWriter, r *http.Request) {
@@ -13,7 +13,7 @@ func Hello(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetUser(w http.ResponseWriter, r *http.Request) {
-	id := app.Param(r, "id")
+	id := internalhttp.Param(r, "id")
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte(fmt.Sprintf(`{"user_id": "%s"}`, id)))

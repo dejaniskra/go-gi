@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/dejaniskra/go-gi/internal/logger"
+	"github.com/dejaniskra/go-gi/pkg/shared/logger"
 )
 
 type Protocols struct {
@@ -34,7 +34,13 @@ type Config struct {
 	Log  *Log  `json:"log"`
 }
 
+var cfg *Config
+
 func LoadConfig(path string) *Config {
+	if cfg != nil {
+		return cfg
+	}
+
 	fmt.Println("Loading config from: ", path)
 
 	file, err := os.Open(path)
@@ -43,15 +49,14 @@ func LoadConfig(path string) *Config {
 	}
 	defer file.Close()
 
-	var cfg Config
 	decoder := json.NewDecoder(file)
 	if err := decoder.Decode(&cfg); err != nil {
 		panic(fmt.Sprintf("failed to decode config JSON: %v", err))
 	}
 
-	validateConfig(&cfg)
+	validateConfig(cfg)
 
-	return &cfg
+	return cfg
 }
 
 func validateConfig(cfg *Config) {
@@ -77,10 +82,8 @@ func setDefaultHttp(cfg *Config) {
 		cfg.Http = &Http{}
 	}
 
-	// Port
 	defaultInt(&cfg.Http.Port, 1738, "http.port")
 
-	// Protocols
 	if cfg.Http.Protocols == nil {
 		fmt.Println("No http.protocols provided, defaulting to HTTP1")
 		cfg.Http.Protocols = &Protocols{HTTP1: true}
@@ -102,7 +105,7 @@ func setDefaultHttp(cfg *Config) {
 	// Timeouts
 	if cfg.Http.Timeouts == nil {
 		cfg.Http.Timeouts = &Timeouts{}
-		fmt.Println("⚠️  No http.timeouts provided, defaulting to 30 seconds")
+		fmt.Println("No http.timeouts provided, defaulting to 30 seconds")
 	}
 	defaultInt(&cfg.Http.Timeouts.ReadRequest, 30, "http.timeouts.read_request")
 	defaultInt(&cfg.Http.Timeouts.ReadRequestHeader, 30, "http.timeouts.read_request_header")
