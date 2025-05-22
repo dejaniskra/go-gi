@@ -14,8 +14,8 @@ func main() {
 
 	server := application.NewHttpServer()
 
-	server.AddRoute(http.GET, "/hello", handlers.Hello)
-	server.AddRoute(http.GET, "/hello/:id", handlers.GetUser)
+	server.AddRoute(http.POST, "/testx", handlers.TestHandler)
+	server.AddRoute(http.POST, "/testx/:id", handlers.TestHandlerParam)
 
 	server.AddMiddleware(middleware.RecoverMiddleware)
 	server.AddMiddleware(middleware.RequestIDMiddleware)

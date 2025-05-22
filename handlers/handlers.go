@@ -1,20 +1,17 @@
 package handlers
 
-import (
-	"fmt"
-	"net/http"
+import "github.com/dejaniskra/go-gi/internal/http"
 
-	internalhttp "github.com/dejaniskra/go-gi/internal/http"
-)
-
-func Hello(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	w.Write([]byte(`{"hello": "world"}`))
+func TestHandler(req *http.HTTPRequest, res *http.HTTPResponse) {
+	res.Headers["Content-Type"] = "application/json"
+	res.Headers["Dejan"] = "Iskra"
+	res.StatusCode = 200
+	res.Body = req.Body
 }
 
-func GetUser(w http.ResponseWriter, r *http.Request) {
-	id := internalhttp.Param(r, "id")
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte(fmt.Sprintf(`{"user_id": "%s"}`, id)))
+func TestHandlerParam(req *http.HTTPRequest, res *http.HTTPResponse) {
+	res.Headers["Content-Type"] = "application/json"
+	res.Headers["Dejan"] = req.PathParams["id"]
+	res.StatusCode = 404
+	res.Body = req.Body
 }

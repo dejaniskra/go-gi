@@ -1,7 +1,6 @@
 package http
 
 import (
-	"net/http"
 	"strings"
 )
 
@@ -23,12 +22,4 @@ func matchRoute(pattern, actual string) (map[string]string, bool) {
 	}
 
 	return params, true
-}
-
-func Param(r *http.Request, key string) string {
-	params, ok := r.Context().Value("pathParams").(map[string]string)
-	if !ok {
-		return ""
-	}
-	return params[key]
 }

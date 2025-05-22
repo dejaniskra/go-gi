@@ -9,36 +9,26 @@ import (
 	"github.com/dejaniskra/go-gi/internal/config"
 )
 
-type RouteKey struct {
+type routeKey struct {
 	Method string
 	Path   string
 }
 
-type HTTPMethod string
-
-const (
-	GET     HTTPMethod = "GET"
-	POST    HTTPMethod = "POST"
-	PUT     HTTPMethod = "PUT"
-	DELETE  HTTPMethod = "DELETE"
-	PATCH   HTTPMethod = "PATCH"
-	OPTIONS HTTPMethod = "OPTIONS"
-	HEAD    HTTPMethod = "HEAD"
-)
-
 type HttpServer struct {
-	routes      map[RouteKey]http.HandlerFunc
+	routes      map[routeKey]http.HandlerFunc
 	middlewares []func(http.Handler) http.Handler
+	routesX     map[routeKey]http.HandlerFunc
 }
 
 func NewServer() *HttpServer {
 	return &HttpServer{
-		routes: make(map[RouteKey]http.HandlerFunc),
+		routes:  make(map[routeKey]http.HandlerFunc),
+		routesX: make(map[routeKey]http.HandlerFunc),
 	}
 }
 
-func (httpServer *HttpServer) AddRoute(method HTTPMethod, path string, handler http.HandlerFunc) {
-	httpServer.routes[RouteKey{Method: string(method), Path: path}] = handler
+func (httpServer *HttpServer) AddRoute(method HTTPMethod, path string, handler HTTPHandler) {
+	httpServer.routesX[routeKey{Method: string(method), Path: path}] = Handler(handler)
 }
 
 func (httpServer *HttpServer) AddMiddleware(mw func(http.Handler) http.Handler) {
@@ -47,7 +37,7 @@ func (httpServer *HttpServer) AddMiddleware(mw func(http.Handler) http.Handler) 
 
 func (httpServer *HttpServer) Start(cfg *config.Config) error {
 	router := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		for key, handler := range httpServer.routes {
+		for key, handler := range httpServer.routesX {
 			params, matched := matchRoute(key.Path, r.URL.Path)
 			if matched && key.Method == r.Method {
 				ctx := context.WithValue(r.Context(), "pathParams", params)
