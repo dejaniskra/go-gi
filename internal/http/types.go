@@ -1,10 +1,19 @@
 package http
 
 import (
-	"fmt"
 	"io"
 	"net/http"
 )
+
+type routeKey struct {
+	Method string
+	Path   string
+}
+
+type HttpServer struct {
+	middlewares []func(http.Handler) http.Handler
+	routes      map[routeKey]http.HandlerFunc
+}
 
 type HTTPMethod string
 
@@ -33,50 +42,4 @@ type HTTPRequest struct {
 }
 
 type HTTPHandler func(*HTTPRequest, *HTTPResponse)
-
-func Handler(handler HTTPHandler) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		req := &HTTPRequest{
-			Method:      r.Method,
-			PathParams:  make(map[string]string),
-			QueryParams: make(map[string]string),
-			Headers:     make(map[string]string),
-			Body:        r.Body,
-		}
-		for k, v := range r.Header {
-			req.Headers[k] = v[0] // Simplified: only first header value; TODO: // verify
-		}
-		for k, v := range r.URL.Query() {
-			req.QueryParams[k] = v[0] // Simplified: only first query value; TODO: // verify
-		}
-		params, ok := r.Context().Value("pathParams").(map[string]string)
-		if ok {
-			for k, v := range params {
-				req.PathParams[k] = v
-			}
-		}
-
-		fmt.Println("QueryParams:", req.QueryParams)
-		fmt.Println("PathParams:", req.PathParams)
-
-		res := &HTTPResponse{
-			Headers: make(map[string]string),
-		}
-
-		handler(req, res)
-
-		if res.StatusCode == 0 {
-			res.StatusCode = http.StatusOK // Default
-		}
-
-		for k, v := range res.Headers {
-			w.Header().Set(k, v)
-		}
-
-		w.WriteHeader(res.StatusCode)
-
-		if res.Body != nil {
-			io.Copy(w, res.Body)
-		}
-	}
-}
+type MiddlewareHandler func(http.Handler) http.Handler
