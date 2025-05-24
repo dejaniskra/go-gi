@@ -2,14 +2,15 @@ package app
 
 import (
 	"fmt"
+	"net/http"
 
 	"github.com/dejaniskra/go-gi/internal/config"
-	"github.com/dejaniskra/go-gi/internal/http"
+	gogiHttp "github.com/dejaniskra/go-gi/internal/http"
 	"github.com/dejaniskra/go-gi/pkg/shared/logger"
 )
 
 type Application struct {
-	HttpServer *http.HttpServer
+	httpServer *gogiHttp.HttpServer
 }
 
 func NewApplication() *Application {
@@ -20,23 +21,32 @@ func (application *Application) SetLogger(level logger.Level, format logger.Form
 	logger.InitGlobal(level, format)
 }
 
-func (application *Application) NewHttpServer() *http.HttpServer {
-	httpServer := http.NewServer()
+func (application *Application) AddRoute(method gogiHttp.HTTPMethod, path string, handler gogiHttp.HTTPHandler) {
+	httpServer := gogiHttp.GetServer()
+	if application.httpServer == nil {
+		application.httpServer = httpServer
+	} // TODO: revisit this
+	httpServer.AddRoute(method, path, handler)
+}
 
-	application.HttpServer = httpServer
-	return application.HttpServer
+func (application *Application) AddMiddleware(mw func(http.Handler) http.Handler) {
+	httpServer := gogiHttp.GetServer()
+	if application.httpServer == nil {
+		application.httpServer = httpServer
+	} // TODO: revisit this
+	httpServer.AddMiddleware(mw)
 }
 
 func (application *Application) Start() error {
 	// ADD cron and kafka here to the chain
-	if application.HttpServer == nil {
+	if application.httpServer == nil {
 		return fmt.Errorf("no need to start an empty application")
 	}
 
 	cfg := config.LoadConfig("config.json")
 
-	if application.HttpServer != nil {
-		err := application.HttpServer.Start(cfg)
+	if application.httpServer != nil {
+		err := application.httpServer.Start(cfg)
 		if err != nil {
 			fmt.Println("Error starting HTTP server:", err)
 			return err

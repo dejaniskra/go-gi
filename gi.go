@@ -12,13 +12,11 @@ func main() {
 	application := app.NewApplication()
 	application.SetLogger(logger.INFO, logger.JSON)
 
-	server := application.NewHttpServer()
+	application.AddRoute(http.POST, "/testx", handlers.TestHandler)
+	application.AddRoute(http.POST, "/testx/:id", handlers.TestHandlerParam)
 
-	server.AddRoute(http.POST, "/testx", handlers.TestHandler)
-	server.AddRoute(http.POST, "/testx/:id", handlers.TestHandlerParam)
-
-	server.AddMiddleware(middleware.RecoverMiddleware)
-	server.AddMiddleware(middleware.RequestIDMiddleware)
+	application.AddMiddleware(middleware.RecoverMiddleware)
+	application.AddMiddleware(middleware.RequestIDMiddleware)
 
 	err := application.Start()
 

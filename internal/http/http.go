@@ -9,10 +9,16 @@ import (
 	"github.com/dejaniskra/go-gi/internal/config"
 )
 
-func NewServer() *HttpServer {
-	return &HttpServer{
-		routes: make(map[routeKey]http.HandlerFunc),
+var httpServer *HttpServer
+
+func GetServer() *HttpServer {
+	if httpServer == nil {
+		httpServer = &HttpServer{
+			routes: make(map[routeKey]http.HandlerFunc),
+		}
 	}
+
+	return httpServer
 }
 
 func (httpServer *HttpServer) AddRoute(method HTTPMethod, path string, handler HTTPHandler) {
