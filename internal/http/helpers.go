@@ -1,7 +1,6 @@
 package http
 
 import (
-	"fmt"
 	"io"
 	"net/http"
 	"strings"
@@ -17,10 +16,10 @@ func Handler(handler HTTPHandler) http.HandlerFunc {
 			Body:        r.Body,
 		}
 		for k, v := range r.Header {
-			req.Headers[k] = v[0] // Simplified: only first header value; TODO: // verify
+			req.Headers[k] = v[0]
 		}
 		for k, v := range r.URL.Query() {
-			req.QueryParams[k] = v[0] // Simplified: only first query value; TODO: // verify
+			req.QueryParams[k] = v[0]
 		}
 		params, ok := r.Context().Value("pathParams").(map[string]string)
 		if ok {
@@ -28,9 +27,6 @@ func Handler(handler HTTPHandler) http.HandlerFunc {
 				req.PathParams[k] = v
 			}
 		}
-
-		fmt.Println("QueryParams:", req.QueryParams)
-		fmt.Println("PathParams:", req.PathParams)
 
 		res := &HTTPResponse{
 			Headers: make(map[string]string),
