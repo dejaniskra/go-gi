@@ -1,4 +1,4 @@
-package xxx
+package gogi
 
 import (
 	"fmt"
@@ -15,6 +15,10 @@ import (
 type Person struct {
 	Name string `json:"name"`
 	Age  int    `json:"age"`
+}
+
+func NewGoGi() *app.Application {
+	return app.NewApplication()
 }
 
 func xxx() {
