@@ -1,4 +1,4 @@
-package xxx
+package public
 
 import (
 	"fmt"
@@ -15,6 +15,10 @@ import (
 type Person struct {
 	Name string `json:"name"`
 	Age  int    `json:"age"`
+}
+
+func GoGi() *app.Application {
+	return app.NewApplication()
 }
 
 func xxx() {
@@ -35,7 +39,6 @@ func xxx() {
 		Timeout: &timeout,
 		Body:    reqBody,
 	})
-
 	if err != nil {
 		fmt.Println("Error:", err)
 	} else {
