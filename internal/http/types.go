@@ -15,18 +15,6 @@ type HttpServer struct {
 	routes      map[routeKey]http.HandlerFunc
 }
 
-type HTTPMethod string
-
-const (
-	GET     HTTPMethod = "GET"
-	POST    HTTPMethod = "POST"
-	PUT     HTTPMethod = "PUT"
-	DELETE  HTTPMethod = "DELETE"
-	PATCH   HTTPMethod = "PATCH"
-	OPTIONS HTTPMethod = "OPTIONS"
-	HEAD    HTTPMethod = "HEAD"
-)
-
 type HTTPResponse struct {
 	StatusCode int
 	Headers    map[string]string

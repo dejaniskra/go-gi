@@ -13,7 +13,7 @@ func TestHandler(req *http.HTTPRequest, res *http.HTTPResponse) {
 	res.StatusCode = 200
 
 	var person Person
-	err := req.ToJSON(&person)
+	err := req.ToJson(&person)
 	if err != nil {
 		res.StatusCode = 400
 		res.Body = nil
@@ -22,7 +22,7 @@ func TestHandler(req *http.HTTPRequest, res *http.HTTPResponse) {
 	person.Age += 1
 	person.Name += " Iskra"
 
-	reader, err := res.ToReader(person)
+	reader, err := res.FromJson(person)
 	if err != nil {
 		res.StatusCode = 500
 		res.Body = nil

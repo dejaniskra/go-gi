@@ -7,6 +7,7 @@ import (
 	"github.com/dejaniskra/go-gi/internal/config"
 	gogiHttp "github.com/dejaniskra/go-gi/internal/http"
 	"github.com/dejaniskra/go-gi/pkg/shared/logger"
+	"github.com/dejaniskra/go-gi/pkg/shared/types"
 )
 
 type Application struct {
@@ -21,7 +22,7 @@ func (application *Application) SetLogger(level logger.Level, format logger.Form
 	logger.InitGlobal(level, format)
 }
 
-func (application *Application) AddRoute(method gogiHttp.HTTPMethod, path string, handler gogiHttp.HTTPHandler) {
+func (application *Application) AddRoute(method types.HTTPMethod, path string, handler gogiHttp.HTTPHandler) {
 	httpServer := gogiHttp.GetServer()
 	if application.httpServer == nil {
 		application.httpServer = httpServer
