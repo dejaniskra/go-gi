@@ -1,6 +1,8 @@
 package http
 
 import (
+	"bytes"
+	"encoding/json"
 	"io"
 	"net/http"
 	"strings"
@@ -68,4 +70,28 @@ func matchRoute(pattern, actual string) (map[string]string, bool) {
 	}
 
 	return params, true
+}
+
+func (r *HTTPRequest) ToJSON(dest interface{}) error {
+	if r.Body == nil {
+		return io.EOF
+	}
+
+	bodyBytes, err := io.ReadAll(r.Body)
+	if err != nil {
+		return err
+	}
+
+	// Reset body so it can be re-read later
+	r.Body = bytes.NewBuffer(bodyBytes)
+
+	return json.Unmarshal(bodyBytes, dest)
+}
+
+func (r *HTTPResponse) ToReader(v interface{}) (io.Reader, error) {
+	data, err := json.Marshal(v)
+	if err != nil {
+		return nil, err
+	}
+	return bytes.NewReader(data), nil
 }

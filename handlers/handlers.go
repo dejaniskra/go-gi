@@ -2,11 +2,33 @@ package handlers
 
 import "github.com/dejaniskra/go-gi/internal/http"
 
+type Person struct {
+	Name string `json:"name"`
+	Age  int    `json:"age"`
+}
+
 func TestHandler(req *http.HTTPRequest, res *http.HTTPResponse) {
 	res.Headers["Content-Type"] = "application/json"
 	res.Headers["Dejan"] = "Iskra"
 	res.StatusCode = 200
-	res.Body = req.Body
+
+	var person Person
+	err := req.ToJSON(&person)
+	if err != nil {
+		res.StatusCode = 400
+		res.Body = nil
+		return
+	}
+	person.Age += 1
+	person.Name += " Iskra"
+
+	reader, err := res.ToReader(person)
+	if err != nil {
+		res.StatusCode = 500
+		res.Body = nil
+		return
+	}
+	res.Body = reader
 }
 
 func TestHandlerParam(req *http.HTTPRequest, res *http.HTTPResponse) {
