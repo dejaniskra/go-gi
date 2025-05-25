@@ -3,7 +3,7 @@ package public
 import (
 	"fmt"
 
-	"github.com/dejaniskra/go-gi/app"
+	app "github.com/dejaniskra/go-gi/gogi"
 	"github.com/dejaniskra/go-gi/handlers"
 	"github.com/dejaniskra/go-gi/logger"
 	"github.com/dejaniskra/go-gi/types"
