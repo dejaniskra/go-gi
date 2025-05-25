@@ -8,67 +8,9 @@ import (
 	"os"
 	"sync"
 	"time"
+
+	"github.com/dejaniskra/go-gi/internal/config"
 )
-
-type Level int
-
-const (
-	DEBUG Level = iota
-	INFO
-	WARN
-	ERROR
-)
-
-func (l Level) String() string {
-	return [...]string{"debug", "info", "warn", "error"}[l]
-}
-
-func (l *Level) UnmarshalJSON(data []byte) error {
-	var s string
-	if err := json.Unmarshal(data, &s); err != nil {
-		return err
-	}
-
-	switch s {
-	case "debug":
-		*l = DEBUG
-	case "info":
-		*l = INFO
-	case "warn":
-		*l = WARN
-	case "error":
-		*l = ERROR
-	default:
-		return fmt.Errorf("invalid log level: %s", s)
-	}
-
-	return nil
-}
-
-type Format int
-
-const (
-	TEXT Format = iota
-	JSON
-)
-
-func (f *Format) UnmarshalJSON(data []byte) error {
-	var s string
-	if err := json.Unmarshal(data, &s); err != nil {
-		return err
-	}
-
-	switch s {
-	case "json":
-		*f = JSON
-	case "text":
-		*f = TEXT
-	default:
-		return fmt.Errorf("invalid log format: %s", s)
-	}
-
-	return nil
-}
 
 type Field struct {
 	Key   string
@@ -78,6 +20,8 @@ type Field struct {
 type contextKey string
 
 const logContextKey contextKey = "logger_fields"
+
+var defaultLogger *Logger
 
 func WithFields(ctx context.Context, fields ...Field) context.Context {
 	existing, _ := ctx.Value(logContextKey).([]Field)
@@ -91,20 +35,31 @@ func FieldsFromContext(ctx context.Context) []Field {
 
 type Logger struct {
 	mu     sync.Mutex
-	level  Level
-	format Format
+	level  string
+	format string
 	out    io.Writer
 }
 
-func New(level Level, format Format) *Logger {
+func GetLogger() *Logger {
+	if defaultLogger == nil {
+		config := config.GetConfig()
+		defaultLogger = New(config.Log.Level, config.Log.Format)
+	}
+	return defaultLogger
+}
+
+func New(level string, format string) *Logger {
+	if defaultLogger != nil {
+		return defaultLogger
+	}
 	return &Logger{level: level, format: format, out: os.Stdout}
 }
 
-func (l *Logger) log(level Level, msg string, fields ...Field) {
+func (l *Logger) log(level string, msg string, fields ...Field) {
 	l.logCtx(context.Background(), level, msg, fields...)
 }
 
-func (l *Logger) logCtx(ctx context.Context, level Level, msg string, fields ...Field) {
+func (l *Logger) logCtx(ctx context.Context, level string, msg string, fields ...Field) {
 	if level < l.level {
 		return
 	}
@@ -115,9 +70,9 @@ func (l *Logger) logCtx(ctx context.Context, level Level, msg string, fields ...
 	l.mu.Lock()
 	defer l.mu.Unlock()
 
-	if l.format == JSON {
+	if l.format == "JSON" {
 		entry := map[string]any{
-			"level":     level.String(),
+			"level":     level,
 			"timestamp": timestamp,
 			"message":   msg,
 		}
@@ -133,7 +88,7 @@ func (l *Logger) logCtx(ctx context.Context, level Level, msg string, fields ...
 		fmt.Fprintln(l.out, string(data))
 
 	} else {
-		fmt.Fprintf(l.out, "[%s] %s: %s", timestamp, level.String(), msg)
+		fmt.Fprintf(l.out, "[%s] %s: %s", timestamp, level, msg)
 		for _, f := range allFields {
 			fmt.Fprintf(l.out, " %s=%v", f.Key, f.Value)
 		}
@@ -142,41 +97,35 @@ func (l *Logger) logCtx(ctx context.Context, level Level, msg string, fields ...
 }
 
 func (l *Logger) debug(msg string, fields ...Field) {
-	l.log(DEBUG, msg, fields...)
+	l.log("DEBUG", msg, fields...)
 }
 
 func (l *Logger) info(msg string, fields ...Field) {
-	l.log(INFO, msg, fields...)
+	l.log("INFO", msg, fields...)
 }
 
 func (l *Logger) warn(msg string, fields ...Field) {
-	l.log(WARN, msg, fields...)
+	l.log("WARN", msg, fields...)
 }
 
 func (l *Logger) error(msg string, fields ...Field) {
-	l.log(ERROR, msg, fields...)
+	l.log("ERROR", msg, fields...)
 }
 
 func (l *Logger) debugCtx(ctx context.Context, msg string, fields ...Field) {
-	l.logCtx(ctx, DEBUG, msg, fields...)
+	l.logCtx(ctx, "DEBUG", msg, fields...)
 }
 
 func (l *Logger) infoCtx(ctx context.Context, msg string, fields ...Field) {
-	l.logCtx(ctx, INFO, msg, fields...)
+	l.logCtx(ctx, "INFO", msg, fields...)
 }
 
 func (l *Logger) warnCtx(ctx context.Context, msg string, fields ...Field) {
-	l.logCtx(ctx, WARN, msg, fields...)
+	l.logCtx(ctx, "WARN", msg, fields...)
 }
 
 func (l *Logger) errorCtx(ctx context.Context, msg string, fields ...Field) {
-	l.logCtx(ctx, ERROR, msg, fields...)
-}
-
-var defaultLogger *Logger
-
-func InitGlobal(level Level, format Format) {
-	defaultLogger = New(level, format)
+	l.logCtx(ctx, "ERROR", msg, fields...)
 }
 
 func Debug(msg string, fields ...Field) {

@@ -4,8 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-
-	"github.com/dejaniskra/go-gi/pkg/shared/logger"
 )
 
 type Protocols struct {
@@ -25,8 +23,8 @@ type Http struct {
 	MaxHeaderBytes *int       `json:"max_header_bytes"`
 }
 type Log struct {
-	Level  logger.Level  `json:"level"`
-	Format logger.Format `json:"format"`
+	Level  string `json:"level"`
+	Format string `json:"format"`
 }
 
 type Config struct {
@@ -36,14 +34,12 @@ type Config struct {
 
 var cfg *Config
 
-func LoadConfig(path string) *Config {
+func GetConfig() *Config {
 	if cfg != nil {
 		return cfg
 	}
 
-	fmt.Println("Loading config from: ", path)
-
-	file, err := os.Open(path)
+	file, err := os.Open("config.json")
 	if err != nil {
 		panic(fmt.Sprintf("failed to open config file: %v", err))
 	}
@@ -71,8 +67,8 @@ func setDefaultLog(cfg *Config) {
 
 	fmt.Println("No log configuration provided, defaulting to INFO level and JSON format")
 	cfg.Log = &Log{
-		Level:  logger.INFO,
-		Format: logger.JSON,
+		Level:  "INFO",
+		Format: "JSON",
 	}
 }
 

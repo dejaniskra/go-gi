@@ -6,7 +6,6 @@ import (
 
 	"github.com/dejaniskra/go-gi/internal/config"
 	gogiHttp "github.com/dejaniskra/go-gi/internal/http"
-	"github.com/dejaniskra/go-gi/pkg/shared/logger"
 	"github.com/dejaniskra/go-gi/pkg/shared/types"
 )
 
@@ -16,10 +15,6 @@ type Application struct {
 
 func NewApplication() *Application {
 	return &Application{}
-}
-
-func (application *Application) SetLogger(level logger.Level, format logger.Format) {
-	logger.InitGlobal(level, format)
 }
 
 func (application *Application) AddRoute(method types.HTTPMethod, path string, handler gogiHttp.HTTPHandler) {
@@ -44,7 +39,7 @@ func (application *Application) Start() error {
 		return fmt.Errorf("no need to start an empty application")
 	}
 
-	cfg := config.LoadConfig("config.json")
+	cfg := config.GetConfig()
 
 	if application.httpServer != nil {
 		err := application.httpServer.Start(cfg)
