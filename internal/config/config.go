@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/dejaniskra/go-gi/pkg/shared/logger"
+	"github.com/dejaniskra/go-gi/logger"
 )
 
 type Protocols struct {

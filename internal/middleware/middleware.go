@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/dejaniskra/go-gi/pkg/shared/logger"
+	"github.com/dejaniskra/go-gi/logger"
 	"github.com/google/uuid"
 )
 

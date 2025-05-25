@@ -6,8 +6,8 @@ import (
 
 	"github.com/dejaniskra/go-gi/internal/config"
 	gogiHttp "github.com/dejaniskra/go-gi/internal/http"
-	"github.com/dejaniskra/go-gi/pkg/shared/logger"
-	"github.com/dejaniskra/go-gi/pkg/shared/types"
+	"github.com/dejaniskra/go-gi/logger"
+	"github.com/dejaniskra/go-gi/types"
 )
 
 type Application struct {

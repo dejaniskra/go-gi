@@ -5,12 +5,12 @@ import (
 
 	"github.com/dejaniskra/go-gi/app"
 	"github.com/dejaniskra/go-gi/handlers"
+	"github.com/dejaniskra/go-gi/logger"
+	"github.com/dejaniskra/go-gi/types"
+	"github.com/dejaniskra/go-gi/utils"
 
 	"github.com/dejaniskra/go-gi/internal/clients"
 	"github.com/dejaniskra/go-gi/internal/middleware"
-	"github.com/dejaniskra/go-gi/pkg/shared/logger"
-	"github.com/dejaniskra/go-gi/pkg/shared/types"
-	"github.com/dejaniskra/go-gi/pkg/shared/utils"
 )
 
 type Person struct {

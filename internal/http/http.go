@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/dejaniskra/go-gi/internal/config"
-	"github.com/dejaniskra/go-gi/pkg/shared/types"
+	"github.com/dejaniskra/go-gi/types"
 )
 
 var httpServer *HttpServer

@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/dejaniskra/go-gi/pkg/shared/utils"
+	"github.com/dejaniskra/go-gi/utils"
 )
 
 type HTTPClient struct {

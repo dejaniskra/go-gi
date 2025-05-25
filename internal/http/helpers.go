@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/dejaniskra/go-gi/pkg/shared/utils"
+	"github.com/dejaniskra/go-gi/utils"
 )
 
 func Handler(handler HTTPHandler) http.HandlerFunc {
