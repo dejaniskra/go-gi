@@ -1,4 +1,4 @@
-package main
+package xxx
 
 import (
 	"fmt"
@@ -17,7 +17,7 @@ type Person struct {
 	Age  int    `json:"age"`
 }
 
-func main() {
+func xxx() {
 	client := clients.NewHTTPClient("http://rocket.com", nil, 10)
 	timeout := 5
 	person := Person{
