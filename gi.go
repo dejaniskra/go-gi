@@ -3,8 +3,9 @@ package public
 import (
 	"fmt"
 
+	"github.com/dejaniskra/go-gi/app"
 	"github.com/dejaniskra/go-gi/handlers"
-	"github.com/dejaniskra/go-gi/internal/app"
+
 	"github.com/dejaniskra/go-gi/internal/clients"
 	"github.com/dejaniskra/go-gi/internal/middleware"
 	"github.com/dejaniskra/go-gi/pkg/shared/logger"
@@ -17,7 +18,7 @@ type Person struct {
 	Age  int    `json:"age"`
 }
 
-func GoGi() *app.Application {
+func GoGiX() *app.Application {
 	return app.NewApplication()
 }
 
