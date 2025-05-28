@@ -120,11 +120,3 @@ func (c *HTTPClient) Execute(req *HTTPClientRequest) (*HTTPClientResponse, error
 
 	return response, nil
 }
-
-func (r *HTTPRequest) ToJSON(dest interface{}) error {
-	return ReaderToJson(r.Body, dest)
-}
-
-func (r *HTTPResponse) FromJSON(v interface{}) (io.Reader, error) {
-	return JsonToReader(v)
-}
