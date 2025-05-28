@@ -1,6 +1,7 @@
 package gogi
 
 import (
+	"bytes"
 	"io"
 	"net/http"
 	"strings"
@@ -97,12 +98,18 @@ func (c *HTTPClient) Execute(req *HTTPClientRequest) (*HTTPClientResponse, error
 	if err != nil {
 		return nil, err
 	}
+
+	data, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
 	defer resp.Body.Close()
 
 	response := &HTTPClientResponse{
 		StatusCode: resp.StatusCode,
 		Headers:    make(map[string]string),
-		Body:       resp.Body,
+		Body:       bytes.NewReader(data),
 	}
 
 	for key, values := range resp.Header {
