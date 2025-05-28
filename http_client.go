@@ -9,9 +9,9 @@ import (
 )
 
 type HTTPClient struct {
-	BaseURL string
-	Headers map[string]string
-	Timeout int
+	BaseURL *string
+	Headers *map[string]string
+	Timeout *int
 }
 type HTTPClientRequest struct {
 	Method      string
@@ -27,15 +27,21 @@ type HTTPClientResponse struct {
 	Body       io.Reader
 }
 
-func NewHTTPClient(baseURL string, headers map[string]string, timeout int) *HTTPClient {
+func NewHTTPClient(baseURL *string, headers *map[string]string, timeout *int) *HTTPClient {
 	return &HTTPClient{
-		BaseURL: strings.TrimRight(baseURL, "/"),
+		BaseURL: baseURL,
 		Headers: headers,
 		Timeout: timeout,
 	}
 }
 func (c *HTTPClient) Execute(req *HTTPClientRequest) (*HTTPClientResponse, error) {
-	fullURL := c.BaseURL + "/" + strings.TrimLeft(req.Path, "/")
+	baseUrl := ""
+
+	if c.BaseURL != nil {
+		baseUrl = strings.TrimRight(*c.BaseURL, "/")
+	}
+
+	fullURL := baseUrl + "/" + strings.TrimLeft(req.Path, "/")
 
 	httpReq, err := http.NewRequest(req.Method, fullURL, req.Body)
 
@@ -43,17 +49,19 @@ func (c *HTTPClient) Execute(req *HTTPClientRequest) (*HTTPClientResponse, error
 		return nil, err
 	}
 
-	for key, value := range req.Headers {
-		httpReq.Header.Set(key, value)
+	if req.Headers != nil {
+		for key, value := range req.Headers {
+			httpReq.Header.Set(key, value)
+		}
 	}
 
 	timeout := c.Timeout
 	if req.Timeout != nil {
-		timeout = *req.Timeout
+		timeout = req.Timeout
 	}
 
 	client := &http.Client{
-		Timeout: time.Duration(timeout) * time.Second,
+		Timeout: time.Duration(*timeout) * time.Second,
 	}
 
 	resp, err := client.Do(httpReq)
