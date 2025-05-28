@@ -1,24 +1,22 @@
-package app
+package gogi
 
 import (
 	"fmt"
 	"net/http"
 
 	"github.com/dejaniskra/go-gi/internal/config"
-	gogiHttp "github.com/dejaniskra/go-gi/internal/http"
-	"github.com/dejaniskra/go-gi/pkg/shared/types"
 )
 
 type Application struct {
-	httpServer *gogiHttp.HttpServer
+	httpServer *HttpServer
 }
 
 func NewApplication() *Application {
 	return &Application{}
 }
 
-func (application *Application) AddRoute(method types.HTTPMethod, path string, handler gogiHttp.HTTPHandler) {
-	httpServer := gogiHttp.GetServer()
+func (application *Application) AddRoute(method HTTPMethod, path string, handler HTTPHandler) {
+	httpServer := GetServer()
 	if application.httpServer == nil {
 		application.httpServer = httpServer
 	} // TODO: revisit this
@@ -26,7 +24,7 @@ func (application *Application) AddRoute(method types.HTTPMethod, path string, h
 }
 
 func (application *Application) AddMiddleware(mw func(http.Handler) http.Handler) {
-	httpServer := gogiHttp.GetServer()
+	httpServer := GetServer()
 	if application.httpServer == nil {
 		application.httpServer = httpServer
 	} // TODO: revisit this

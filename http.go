@@ -1,4 +1,4 @@
-package http
+package gogi
 
 import (
 	"context"
@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/dejaniskra/go-gi/internal/config"
-	"github.com/dejaniskra/go-gi/pkg/shared/types"
 )
 
 var httpServer *HttpServer
@@ -22,8 +21,8 @@ func GetServer() *HttpServer {
 	return httpServer
 }
 
-func (httpServer *HttpServer) AddRoute(method types.HTTPMethod, path string, handler HTTPHandler) {
-	httpServer.routes[routeKey{Method: string(method), Path: path}] = Handler(handler)
+func (httpServer *HttpServer) AddRoute(method HTTPMethod, path string, handler HTTPHandler) {
+	httpServer.routes[routeKey{Method: string(method), Path: path}] = httpHandler(handler)
 }
 
 func (httpServer *HttpServer) AddMiddleware(mw func(http.Handler) http.Handler) {

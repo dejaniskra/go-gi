@@ -1,4 +1,4 @@
-package clients
+package gogi
 
 import (
 	"fmt"
@@ -6,8 +6,6 @@ import (
 	"net/http"
 	"strings"
 	"time"
-
-	"github.com/dejaniskra/go-gi/pkg/shared/utils"
 )
 
 type HTTPClient struct {
@@ -15,7 +13,7 @@ type HTTPClient struct {
 	Headers map[string]string
 	Timeout int
 }
-type HTTPRequest struct {
+type HTTPClientRequest struct {
 	Method      string
 	Path        string
 	Headers     map[string]string
@@ -23,7 +21,7 @@ type HTTPRequest struct {
 	QueryParams map[string]string
 	Timeout     *int
 }
-type HTTPResponse struct {
+type HTTPClientResponse struct {
 	StatusCode int
 	Headers    map[string]string
 	Body       io.Reader
@@ -36,7 +34,7 @@ func NewHTTPClient(baseURL string, headers map[string]string, timeout int) *HTTP
 		Timeout: timeout,
 	}
 }
-func (c *HTTPClient) Execute(req *HTTPRequest) (*HTTPResponse, error) {
+func (c *HTTPClient) Execute(req *HTTPClientRequest) (*HTTPClientResponse, error) {
 	fullURL := c.BaseURL + "/" + strings.TrimLeft(req.Path, "/")
 
 	httpReq, err := http.NewRequest(req.Method, fullURL, req.Body)
@@ -65,7 +63,7 @@ func (c *HTTPClient) Execute(req *HTTPRequest) (*HTTPResponse, error) {
 	}
 	defer resp.Body.Close()
 
-	response := &HTTPResponse{
+	response := &HTTPClientResponse{
 		StatusCode: resp.StatusCode,
 		Headers:    make(map[string]string),
 		Body:       resp.Body,
@@ -79,9 +77,9 @@ func (c *HTTPClient) Execute(req *HTTPRequest) (*HTTPResponse, error) {
 }
 
 func (r *HTTPRequest) ToJSON(dest interface{}) error {
-	return utils.ReaderToJson(r.Body, dest)
+	return ReaderToJson(r.Body, dest)
 }
 
-func (r *HTTPResponse) FromJson(v interface{}) (io.Reader, error) {
-	return utils.JsonToReader(v)
+func (r *HTTPResponse) FromJSON(v interface{}) (io.Reader, error) {
+	return JsonToReader(v)
 }

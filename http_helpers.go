@@ -1,14 +1,12 @@
-package http
+package gogi
 
 import (
 	"io"
 	"net/http"
 	"strings"
-
-	"github.com/dejaniskra/go-gi/pkg/shared/utils"
 )
 
-func Handler(handler HTTPHandler) http.HandlerFunc {
+func httpHandler(handler HTTPHandler) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		req := &HTTPRequest{
 			Method:      r.Method,
@@ -70,12 +68,4 @@ func matchRoute(pattern, actual string) (map[string]string, bool) {
 	}
 
 	return params, true
-}
-
-func (r *HTTPRequest) ToJson(dest interface{}) error {
-	return utils.ReaderToJson(r.Body, dest)
-}
-
-func (r *HTTPResponse) FromJson(v interface{}) (io.Reader, error) {
-	return utils.JsonToReader(v)
 }

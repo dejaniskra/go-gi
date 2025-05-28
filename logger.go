@@ -1,4 +1,4 @@
-package logger
+package gogi
 
 import (
 	"context"
