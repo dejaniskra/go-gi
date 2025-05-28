@@ -1,6 +1,7 @@
 package gogi
 
 import (
+	"context"
 	"io"
 	"net/http"
 )
@@ -39,6 +40,7 @@ type HTTPRequest struct {
 	QueryParams map[string]string
 	Headers     map[string]string
 	Body        io.Reader
+	Context     context.Context
 }
 
 type HTTPHandler func(*HTTPRequest, *HTTPResponse)
