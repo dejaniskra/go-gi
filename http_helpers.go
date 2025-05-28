@@ -1,7 +1,6 @@
 package gogi
 
 import (
-	"fmt"
 	"io"
 	"net/http"
 	"strings"
@@ -9,7 +8,6 @@ import (
 
 func httpHandler(handler HTTPHandler) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		fmt.Println(r.Context().Value("transaction_id"))
 		req := &HTTPRequest{
 			Method:      r.Method,
 			PathParams:  make(map[string]string),

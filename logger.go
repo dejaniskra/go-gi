@@ -17,21 +17,7 @@ type Field struct {
 	Value any
 }
 
-type contextKey string
-
-const logContextKey contextKey = "logger_fields"
-
 var defaultLogger *Logger
-
-func WithFields(ctx context.Context, fields ...Field) context.Context {
-	existing, _ := ctx.Value(logContextKey).([]Field)
-	return context.WithValue(ctx, logContextKey, append(existing, fields...))
-}
-
-func FieldsFromContext(ctx context.Context) []Field {
-	fields, _ := ctx.Value(logContextKey).([]Field)
-	return fields
-}
 
 type Logger struct {
 	mu     sync.Mutex
@@ -65,7 +51,6 @@ func (l *Logger) logCtx(ctx context.Context, level string, msg string, fields ..
 	}
 
 	timestamp := time.Now().Format(time.RFC3339)
-	allFields := append(FieldsFromContext(ctx), fields...)
 
 	l.mu.Lock()
 	defer l.mu.Unlock()
@@ -76,9 +61,6 @@ func (l *Logger) logCtx(ctx context.Context, level string, msg string, fields ..
 			"timestamp": timestamp,
 			"message":   msg,
 		}
-		for _, f := range allFields {
-			entry[f.Key] = f.Value
-		}
 
 		data, err := json.Marshal(entry)
 		if err != nil {
@@ -86,13 +68,8 @@ func (l *Logger) logCtx(ctx context.Context, level string, msg string, fields ..
 			return
 		}
 		fmt.Fprintln(l.out, string(data))
-
 	} else {
 		fmt.Fprintf(l.out, "[%s] %s: %s", timestamp, level, msg)
-		for _, f := range allFields {
-			fmt.Fprintf(l.out, " %s=%v", f.Key, f.Value)
-		}
-		fmt.Fprintln(l.out)
 	}
 }
 
