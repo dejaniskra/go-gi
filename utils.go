@@ -18,7 +18,7 @@ func ReaderToJson(r io.Reader, dest interface{}) error {
 
 	r = bytes.NewBuffer(bodyBytes)
 
-	return json.Unmarshal(bodyBytes, dest)
+	return json.Unmarshal(bodyBytes, &dest)
 }
 
 func JsonToReader(v interface{}) (io.Reader, error) {
@@ -27,4 +27,11 @@ func JsonToReader(v interface{}) (io.Reader, error) {
 		return nil, err
 	}
 	return bytes.NewReader(data), nil
+}
+
+func FromJSON[T any](r io.Reader) (T, error) {
+	var result T
+	decoder := json.NewDecoder(r)
+	err := decoder.Decode(&result)
+	return result, err
 }
