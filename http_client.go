@@ -1,7 +1,6 @@
 package gogi
 
 import (
-	"fmt"
 	"io"
 	"net/http"
 	"strings"
@@ -15,10 +14,10 @@ type HTTPClient struct {
 }
 type HTTPClientRequest struct {
 	Method      string
-	Path        string
-	Headers     map[string]string
-	Body        io.Reader
-	QueryParams map[string]string
+	Path        *string
+	Headers     *map[string]string
+	Body        *io.Reader
+	QueryParams *map[string]string
 	Timeout     *int
 }
 type HTTPClientResponse struct {
@@ -35,38 +34,67 @@ func NewHTTPClient(baseURL *string, headers *map[string]string, timeout *int) *H
 	}
 }
 func (c *HTTPClient) Execute(req *HTTPClientRequest) (*HTTPClientResponse, error) {
-	baseUrl := ""
+	var baseUrl, path string
 
 	if c.BaseURL != nil {
 		baseUrl = strings.TrimRight(*c.BaseURL, "/")
 	}
+	if req.Path != nil {
+		path = strings.TrimLeft(*req.Path, "/")
+	}
 
-	fullURL := baseUrl + "/" + strings.TrimLeft(req.Path, "/")
+	fullURL := baseUrl
+	if path != "" {
+		if baseUrl != "" {
+			fullURL += "/" + path
+		} else {
+			fullURL = "/" + path
+		}
+	}
 
-	httpReq, err := http.NewRequest(req.Method, fullURL, req.Body)
+	if fullURL == "" {
+		fullURL = "/"
+	}
+
+	var body io.Reader
+	if req.Body != nil {
+		body = *req.Body
+	}
+
+	httpReq, err := http.NewRequest(req.Method, fullURL, body)
 
 	if err != nil {
 		return nil, err
 	}
 
 	if req.Headers != nil {
-		for key, value := range req.Headers {
+		for key, value := range *req.Headers {
 			httpReq.Header.Set(key, value)
 		}
 	}
 
-	timeout := c.Timeout
+	if c.Headers != nil {
+		for key, value := range *c.Headers {
+			if _, exists := httpReq.Header[key]; !exists {
+				httpReq.Header.Set(key, value)
+			}
+		}
+	}
+
+	timeout := 30
+	if c.Timeout != nil {
+		timeout = *c.Timeout
+	}
 	if req.Timeout != nil {
-		timeout = req.Timeout
+		timeout = *req.Timeout
 	}
 
 	client := &http.Client{
-		Timeout: time.Duration(*timeout) * time.Second,
+		Timeout: time.Duration(timeout) * time.Second,
 	}
 
 	resp, err := client.Do(httpReq)
 	if err != nil {
-		fmt.Println("error:", err)
 		return nil, err
 	}
 	defer resp.Body.Close()
@@ -77,8 +105,10 @@ func (c *HTTPClient) Execute(req *HTTPClientRequest) (*HTTPClientResponse, error
 		Body:       resp.Body,
 	}
 
-	for key, value := range resp.Header {
-		response.Headers[key] = value[0]
+	for key, values := range resp.Header {
+		if len(values) > 0 {
+			response.Headers[key] = values[0]
+		}
 	}
 
 	return response, nil
