@@ -128,3 +128,44 @@ func matchRoute(pattern, actual string) (map[string]string, bool) {
 
 	return params, true
 }
+
+type routeKey struct {
+	Method string
+	Path   string
+}
+
+type HttpServer struct {
+	middlewares []func(http.Handler) http.Handler
+	routes      map[routeKey]http.HandlerFunc
+}
+
+type HTTPServerResponse struct {
+	StatusCode int
+	Headers    map[string]string
+	Body       io.Reader
+}
+
+type HTTPServerRequest struct {
+	Method      string
+	Path        string
+	PathParams  map[string]string
+	QueryParams map[string]string
+	Headers     map[string]string
+	Body        io.Reader
+	Context     context.Context
+}
+
+type HTTPHandler func(*HTTPServerRequest, *HTTPServerResponse)
+type MiddlewareHandler func(http.Handler) http.Handler
+
+type HTTPMethod string
+
+const (
+	HTTP_GET     HTTPMethod = "GET"
+	HTTP_POST    HTTPMethod = "POST"
+	HTTP_PUT     HTTPMethod = "PUT"
+	HTTP_DELETE  HTTPMethod = "DELETE"
+	HTTP_PATCH   HTTPMethod = "PATCH"
+	HTTP_OPTIONS HTTPMethod = "OPTIONS"
+	HTTP_HEAD    HTTPMethod = "HEAD"
+)

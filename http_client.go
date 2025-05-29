@@ -15,7 +15,7 @@ type HTTPClient struct {
 }
 
 type HTTPClientRequest struct {
-	Method      string
+	Method      HTTPMethod
 	Path        *string
 	Headers     *map[string]string
 	Body        *io.Reader
@@ -64,7 +64,7 @@ func (c *HTTPClient) Execute(req *HTTPClientRequest) (*HTTPClientResponse, error
 		body = *req.Body
 	}
 
-	httpReq, err := http.NewRequest(req.Method, fullURL, body)
+	httpReq, err := http.NewRequest(string(req.Method), fullURL, body)
 
 	if err != nil {
 		return nil, err
