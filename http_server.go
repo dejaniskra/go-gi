@@ -65,8 +65,9 @@ func (httpServer *HttpServer) Start(cfg *config.Config) error {
 
 func httpHandler(handler HTTPHandler) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		req := &HTTPRequest{
+		req := &HTTPServerRequest{
 			Method:      r.Method,
+			Path:        r.URL.Path,
 			PathParams:  make(map[string]string),
 			QueryParams: make(map[string]string),
 			Headers:     make(map[string]string),
@@ -86,7 +87,7 @@ func httpHandler(handler HTTPHandler) http.HandlerFunc {
 			}
 		}
 
-		res := &HTTPResponse{
+		res := &HTTPServerResponse{
 			Headers: make(map[string]string),
 		}
 

@@ -28,14 +28,15 @@ type HttpServer struct {
 	routes      map[routeKey]http.HandlerFunc
 }
 
-type HTTPResponse struct {
+type HTTPServerResponse struct {
 	StatusCode int
 	Headers    map[string]string
 	Body       io.Reader
 }
 
-type HTTPRequest struct {
+type HTTPServerRequest struct {
 	Method      string
+	Path        string
 	PathParams  map[string]string
 	QueryParams map[string]string
 	Headers     map[string]string
@@ -43,5 +44,5 @@ type HTTPRequest struct {
 	Context     context.Context
 }
 
-type HTTPHandler func(*HTTPRequest, *HTTPResponse)
+type HTTPHandler func(*HTTPServerRequest, *HTTPServerResponse)
 type MiddlewareHandler func(http.Handler) http.Handler

@@ -13,6 +13,7 @@ type HTTPClient struct {
 	Headers *map[string]string
 	Timeout *int
 }
+
 type HTTPClientRequest struct {
 	Method      string
 	Path        *string
@@ -21,6 +22,7 @@ type HTTPClientRequest struct {
 	QueryParams *map[string]string
 	Timeout     *int
 }
+
 type HTTPClientResponse struct {
 	StatusCode int
 	Headers    map[string]string
