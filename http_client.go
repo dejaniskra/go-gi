@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"io"
 	"net/http"
+	"net/url"
 	"strings"
 	"time"
 )
@@ -62,6 +63,18 @@ func (c *HTTPClient) Execute(req *HTTPClientRequest) (*HTTPClientResponse, error
 	var body io.Reader
 	if req.Body != nil {
 		body = *req.Body
+	}
+
+	parsedURL, err := url.Parse(fullURL)
+	if err != nil {
+		return nil, err
+	}
+	if req.QueryParams != nil {
+		q := parsedURL.Query()
+		for key, value := range *req.QueryParams {
+			q.Add(key, value)
+		}
+		parsedURL.RawQuery = q.Encode()
 	}
 
 	httpReq, err := http.NewRequest(string(req.Method), fullURL, body)
