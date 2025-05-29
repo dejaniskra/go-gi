@@ -29,12 +29,12 @@ type Logger struct {
 func GetLogger() *Logger {
 	if defaultLogger == nil {
 		config := config.GetConfig()
-		defaultLogger = New(config.Log.Level, config.Log.Format)
+		defaultLogger = newLogger(config.Log.Level, config.Log.Format)
 	}
 	return defaultLogger
 }
 
-func New(level string, format string) *Logger {
+func newLogger(level string, format string) *Logger {
 	if defaultLogger != nil {
 		return defaultLogger
 	}
