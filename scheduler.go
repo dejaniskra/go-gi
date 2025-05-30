@@ -21,9 +21,15 @@ var (
 	jobs   []job
 )
 
+func validateDuration(value interface{}) (time.Duration, bool) {
+	duration, ok := value.(time.Duration)
+	return duration, ok
+}
+
 func AddJobInterval(name string, interval time.Duration, fn func()) error {
-	if interval <= 0 {
-		return errors.New("interval must be greater than 0")
+	_, ok := validateDuration(interval)
+	if !ok {
+		return errors.New("invalid duration type, must be time.Duration")
 	}
 	jobsMu.Lock()
 	defer jobsMu.Unlock()
