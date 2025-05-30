@@ -32,6 +32,8 @@ func (httpServer *HttpServer) AddMiddleware(mw func(http.Handler) http.Handler) 
 }
 
 func (httpServer *HttpServer) Start(cfg *config.Config) error {
+	startScheduler()
+
 	router := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		for key, handler := range httpServer.routes {
 			params, matched := matchRoute(key.Path, r.URL.Path)
