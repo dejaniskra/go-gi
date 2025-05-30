@@ -3,6 +3,7 @@ package gogi
 import (
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/dejaniskra/go-gi/internal/config"
 )
@@ -29,6 +30,14 @@ func (application *Application) AddMiddleware(mw func(http.Handler) http.Handler
 		application.httpServer = httpServer
 	} // TODO: revisit this
 	httpServer.AddMiddleware(mw)
+}
+
+func (application *Application) AddCronJob(name, cronExpr string, fn func()) error {
+	return AddJobCron(name, cronExpr, fn)
+}
+
+func (application *Application) AddIntervalJob(name string, interval time.Duration, fn func()) error {
+	return AddJobInterval(name, interval, fn)
 }
 
 func (application *Application) Start() error {

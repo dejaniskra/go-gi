@@ -21,15 +21,16 @@ var (
 	jobs   []job
 )
 
-// AddJobInterval registers a job to run every given interval.
-func AddJobInterval(name string, interval time.Duration, fn func()) {
+func AddJobInterval(name string, interval time.Duration, fn func()) error {
+	if interval <= 0 {
+		return errors.New("interval must be greater than 0")
+	}
 	jobsMu.Lock()
 	defer jobsMu.Unlock()
 	jobs = append(jobs, job{name: name, interval: interval, fn: fn})
+	return nil
 }
 
-// AddJobCron registers a job using a cron expression (minute hour day month weekday).
-// Example: "0 12 * * *" runs every day at noon.
 func AddJobCron(name, cronExpr string, fn func()) error {
 	sched, err := parseCron(cronExpr)
 	if err != nil {
