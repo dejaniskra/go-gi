@@ -33,15 +33,14 @@ func (application *Application) AddMiddleware(mw func(http.Handler) http.Handler
 }
 
 func (application *Application) AddCronJob(name, cronExpr string, fn func()) error {
-	return AddJobCron(name, cronExpr, fn)
+	return addJobCron(name, cronExpr, fn)
 }
 
 func (application *Application) AddIntervalJob(name string, interval time.Duration, fn func()) error {
-	return AddJobInterval(name, interval, fn)
+	return addJobInterval(name, interval, fn)
 }
 
 func (application *Application) Start() error {
-	// ADD cron and kafka here to the chain
 	if application.httpServer == nil {
 		return fmt.Errorf("no need to start an empty application")
 	}

@@ -26,7 +26,7 @@ func validateDuration(value interface{}) (time.Duration, bool) {
 	return duration, ok
 }
 
-func AddJobInterval(name string, interval time.Duration, fn func()) error {
+func addJobInterval(name string, interval time.Duration, fn func()) error {
 	_, ok := validateDuration(interval)
 	if !ok {
 		return errors.New("invalid duration type, must be time.Duration")
@@ -37,7 +37,7 @@ func AddJobInterval(name string, interval time.Duration, fn func()) error {
 	return nil
 }
 
-func AddJobCron(name, cronExpr string, fn func()) error {
+func addJobCron(name, cronExpr string, fn func()) error {
 	sched, err := parseCron(cronExpr)
 	if err != nil {
 		return err
