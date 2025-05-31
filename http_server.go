@@ -13,7 +13,7 @@ import (
 
 var httpServer *HttpServer
 
-func GetServer() *HttpServer {
+func getServer() *HttpServer {
 	if httpServer == nil {
 		httpServer = &HttpServer{
 			routes: make(map[routeKey]http.HandlerFunc),
@@ -23,15 +23,15 @@ func GetServer() *HttpServer {
 	return httpServer
 }
 
-func (httpServer *HttpServer) AddRoute(method HTTPMethod, path string, handler HTTPHandler) {
+func (httpServer *HttpServer) addRoute(method HTTPMethod, path string, handler HTTPHandler) {
 	httpServer.routes[routeKey{Method: string(method), Path: path}] = httpHandler(handler)
 }
 
-func (httpServer *HttpServer) AddMiddleware(mw func(http.Handler) http.Handler) {
+func (httpServer *HttpServer) addMiddleware(mw func(http.Handler) http.Handler) {
 	httpServer.middlewares = append(httpServer.middlewares, mw)
 }
 
-func (httpServer *HttpServer) Start(cfg *config.Config) error {
+func (httpServer *HttpServer) start(cfg *config.Config) error {
 	startScheduler()
 
 	router := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

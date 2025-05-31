@@ -11,11 +11,6 @@ import (
 	"github.com/dejaniskra/go-gi/internal/config"
 )
 
-type Field struct {
-	Key   string
-	Value any
-}
-
 var defaultLogger *Logger
 
 type Logger struct {

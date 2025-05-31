@@ -30,7 +30,7 @@ type HTTPClientResponse struct {
 	Body       io.Reader
 }
 
-func NewHTTPClient(baseURL *string, headers *map[string]string, timeout *int) *HTTPClient {
+func GetHTTPClient(baseURL *string, headers *map[string]string, timeout *int) *HTTPClient {
 	return &HTTPClient{
 		BaseURL: baseURL,
 		Headers: headers,

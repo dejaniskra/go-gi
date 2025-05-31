@@ -17,19 +17,19 @@ func NewApplication() *Application {
 }
 
 func (application *Application) AddRoute(method HTTPMethod, path string, handler HTTPHandler) {
-	httpServer := GetServer()
+	httpServer := getServer()
 	if application.httpServer == nil {
 		application.httpServer = httpServer
 	} // TODO: revisit this
-	httpServer.AddRoute(method, path, handler)
+	httpServer.addRoute(method, path, handler)
 }
 
 func (application *Application) AddMiddleware(mw func(http.Handler) http.Handler) {
-	httpServer := GetServer()
+	httpServer := getServer()
 	if application.httpServer == nil {
 		application.httpServer = httpServer
 	} // TODO: revisit this
-	httpServer.AddMiddleware(mw)
+	httpServer.addMiddleware(mw)
 }
 
 func (application *Application) AddCronJob(name, cronExpr string, fn func()) error {
@@ -48,7 +48,7 @@ func (application *Application) Start() error {
 	cfg := config.GetConfig()
 
 	if application.httpServer != nil {
-		err := application.httpServer.Start(cfg)
+		err := application.httpServer.start(cfg)
 		if err != nil {
 			fmt.Println("Error starting HTTP server:", err)
 			return err
