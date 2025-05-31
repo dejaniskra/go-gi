@@ -48,9 +48,10 @@ type Log struct {
 }
 
 type Config struct {
-	Http  *Http                    `json:"http"`
-	MySQL map[string]*DBRoleConfig `json:"mysql"`
-	Log   *Log                     `json:"log"`
+	Http     *Http                    `json:"http"`
+	MySQL    map[string]*DBRoleConfig `json:"mysql"`
+	Postgres map[string]*DBRoleConfig `json:"postgres"`
+	Log      *Log                     `json:"log"`
 }
 
 var cfg *Config

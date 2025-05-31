@@ -57,6 +57,32 @@
       }
     }
   },
+  "postgres": {
+    "api": {
+      "writer": {
+        "user": "api_user",
+        "password": "secure_password",
+        "host": "localhost",
+        "port": "3306",
+        "db_name": "api_db",
+        "options": "parseTime=true&charset=utf8mb4",
+        "max_open_connections": 100,
+        "max_idle_connections": 50,
+        "max_life_time": 3600
+      },
+      "reader": {
+        "user": "api_user",
+        "password": "secure_password",
+        "host": "localhost",
+        "port": "3306",
+        "db_name": "api_db",
+        "options": "parseTime=true&charset=utf8mb4",
+        "max_open_connections": 100,
+        "max_idle_connections": 50,
+        "max_life_time": 3600
+      }
+    }
+  },
   "log": {
     "level": "info",
     "format": "json"

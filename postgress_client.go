@@ -8,74 +8,76 @@ import (
 	"time"
 
 	"github.com/dejaniskra/go-gi/internal/config"
-	_ "github.com/go-sql-driver/mysql"
+	_ "github.com/lib/pq"
 )
 
 const (
-	mysqlDefaultMaxOpenConns    = 10
-	mysqlDefaultMaxIdleConns    = 5
-	mysqlDefaultConnMaxLifetime = 300 // seconds
+	pgDefaultMaxOpenConns    = 10
+	pgDefaultMaxIdleConns    = 5
+	pgDefaultConnMaxLifetime = 300 // seconds
 )
 
-type MySQLClient struct {
+type PostgresClient struct {
 	Writer *sql.DB
 	Reader *sql.DB
 }
 
-var mysqlClients = make(map[string]*MySQLClient)
+var postgresClients = make(map[string]*PostgresClient)
 
-func GetMySQLClient(role string) (*MySQLClient, error) {
-	if client, exists := mysqlClients[role]; exists {
+func GetPostgresClient(role string) (*PostgresClient, error) {
+	if client, exists := postgresClients[role]; exists {
 		return client, nil
 	}
 
-	cfg := config.GetConfig().MySQL[role]
+	cfg := config.GetConfig().Postgres[role]
 	if cfg == nil {
-		return nil, fmt.Errorf("no MySQL configuration found for role: %s", role)
+		return nil, fmt.Errorf("no Postgres configuration found for role: %s", role)
 	}
 
-	client, err := newMySQLClient(cfg)
+	client, err := newPostgresClient(cfg)
 	if err != nil {
 		return nil, err
 	}
 
-	mysqlClients[role] = client
+	postgresClients[role] = client
 	return client, nil
 }
 
-func newMySQLClient(dbRoleConfig *config.DBRoleConfig) (*MySQLClient, error) {
-	writer, err := newDbConnection(&dbRoleConfig.Writer)
+func newPostgresClient(dbRoleConfig *config.DBRoleConfig) (*PostgresClient, error) {
+	writer, err := newPgConnection(&dbRoleConfig.Writer)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create writer connection: %w", err)
 	}
 
 	if dbRoleConfig.Reader == nil {
-		return &MySQLClient{
+		return &PostgresClient{
 			Writer: writer,
 			Reader: writer,
 		}, nil
 	}
 
-	reader, err := newDbConnection(dbRoleConfig.Reader)
+	reader, err := newPgConnection(dbRoleConfig.Reader)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create reader connection: %w", err)
 	}
 
-	return &MySQLClient{
+	return &PostgresClient{
 		Writer: writer,
 		Reader: reader,
 	}, nil
 }
 
-func newDbConnection(cfg *config.DBConnection) (*sql.DB, error) {
-	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s",
+func newPgConnection(cfg *config.DBConnection) (*sql.DB, error) {
+	dsn := fmt.Sprintf("postgres://%s:%s@%s:%s/%s",
 		cfg.User, cfg.Password, cfg.Host, cfg.Port, cfg.DBName,
 	)
 	if cfg.Options != nil {
 		dsn += "?" + *cfg.Options
+	} else {
+		dsn += "?sslmode=disable"
 	}
 
-	db, err := sql.Open("mysql", dsn)
+	db, err := sql.Open("postgres", dsn)
 	if err != nil {
 		return nil, err
 	}
@@ -83,30 +85,30 @@ func newDbConnection(cfg *config.DBConnection) (*sql.DB, error) {
 	if cfg.MaxOpenConns != nil {
 		db.SetMaxOpenConns(*cfg.MaxOpenConns)
 	} else {
-		db.SetMaxOpenConns(mysqlDefaultMaxOpenConns)
+		db.SetMaxOpenConns(pgDefaultMaxOpenConns)
 	}
 
 	if cfg.MaxIdleConns != nil {
 		db.SetMaxIdleConns(*cfg.MaxIdleConns)
 	} else {
-		db.SetMaxIdleConns(mysqlDefaultMaxIdleConns)
+		db.SetMaxIdleConns(pgDefaultMaxIdleConns)
 	}
 
 	if cfg.ConnMaxLifetime != nil {
 		db.SetConnMaxLifetime(time.Duration(*cfg.ConnMaxLifetime) * time.Second)
 	} else {
-		db.SetConnMaxLifetime(mysqlDefaultConnMaxLifetime * time.Second)
+		db.SetConnMaxLifetime(pgDefaultConnMaxLifetime * time.Second)
 	}
 
 	if err := db.Ping(); err != nil {
 		return nil, err
 	}
 
-	log.Printf("[MySQL] Connected to %s:%s/%s", cfg.Host, cfg.Port, cfg.DBName)
+	log.Printf("[Postgres] Connected to %s:%s/%s", cfg.Host, cfg.Port, cfg.DBName)
 	return db, nil
 }
 
-func (c *MySQLClient) Ping(ctx context.Context) error {
+func (c *PostgresClient) Ping(ctx context.Context) error {
 	if err := c.Writer.PingContext(ctx); err != nil {
 		return fmt.Errorf("writer DB ping failed: %w", err)
 	}
@@ -119,7 +121,7 @@ func (c *MySQLClient) Ping(ctx context.Context) error {
 	return nil
 }
 
-func (c *MySQLClient) Close() error {
+func (c *PostgresClient) Close() error {
 	if err := c.Writer.Close(); err != nil {
 		return err
 	}
@@ -129,15 +131,15 @@ func (c *MySQLClient) Close() error {
 	return nil
 }
 
-func (c *MySQLClient) FindOne(ctx context.Context, query string, args []any, dest ...any) error {
-	message := fmt.Sprintf("[MySQL] FindOne: %s | args=%v", query, args)
+func (c *PostgresClient) FindOne(ctx context.Context, query string, args []any, dest ...any) error {
+	message := fmt.Sprintf("[Postgres] FindOne: %s | args=%v", query, args)
 	GetLogger().Debug(message)
 	row := c.Reader.QueryRowContext(ctx, query, args...)
 	return row.Scan(dest...)
 }
 
-func (c *MySQLClient) FindMany(ctx context.Context, query string, args []any, scanFunc func(*sql.Rows) error) error {
-	message := fmt.Sprintf("[MySQL] FindMany: %s | args=%v", query, args)
+func (c *PostgresClient) FindMany(ctx context.Context, query string, args []any, scanFunc func(*sql.Rows) error) error {
+	message := fmt.Sprintf("[Postgres] FindMany: %s | args=%v", query, args)
 	GetLogger().Debug(message)
 	rows, err := c.Reader.QueryContext(ctx, query, args...)
 	if err != nil {
@@ -153,14 +155,14 @@ func (c *MySQLClient) FindMany(ctx context.Context, query string, args []any, sc
 	return rows.Err()
 }
 
-func (c *MySQLClient) Exec(ctx context.Context, query string, args ...any) (sql.Result, error) {
-	message := fmt.Sprintf("[MySQL] Exec: %s | args=%v", query, args)
+func (c *PostgresClient) Exec(ctx context.Context, query string, args ...any) (sql.Result, error) {
+	message := fmt.Sprintf("[Postgres] Exec: %s | args=%v", query, args)
 	GetLogger().Debug(message)
 
 	return c.Writer.ExecContext(ctx, query, args...)
 }
 
-func (c *MySQLClient) WithTx(ctx context.Context, fn func(*sql.Tx) error) error {
+func (c *PostgresClient) WithTx(ctx context.Context, fn func(*sql.Tx) error) error {
 	tx, err := c.Writer.BeginTx(ctx, nil)
 	if err != nil {
 		return err
