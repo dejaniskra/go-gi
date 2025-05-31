@@ -131,14 +131,14 @@ func (c *MySQLClient) Close() error {
 
 func (c *MySQLClient) FindOne(ctx context.Context, query string, args []any, dest ...any) error {
 	message := fmt.Sprintf("[MySQL] FindOne: %s | args=%v", query, args)
-	GetLogger().debugCtx(ctx, message)
+	GetLogger().Debug(message)
 	row := c.Reader.QueryRowContext(ctx, query, args...)
 	return row.Scan(dest...)
 }
 
 func (c *MySQLClient) FindMany(ctx context.Context, query string, args []any, scanFunc func(*sql.Rows) error) error {
 	message := fmt.Sprintf("[MySQL] FindMany: %s | args=%v", query, args)
-	GetLogger().debugCtx(ctx, message)
+	GetLogger().Debug(message)
 	rows, err := c.Reader.QueryContext(ctx, query, args...)
 	if err != nil {
 		return err
@@ -155,7 +155,7 @@ func (c *MySQLClient) FindMany(ctx context.Context, query string, args []any, sc
 
 func (c *MySQLClient) Exec(ctx context.Context, query string, args ...any) (sql.Result, error) {
 	message := fmt.Sprintf("[MySQL] Exec: %s | args=%v", query, args)
-	GetLogger().debugCtx(ctx, message)
+	GetLogger().Debug(message)
 
 	return c.Writer.ExecContext(ctx, query, args...)
 }

@@ -1,7 +1,6 @@
 package gogi
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -41,11 +40,7 @@ func newLogger(level string, format string) *Logger {
 	return &Logger{level: level, format: format, out: os.Stdout}
 }
 
-func (l *Logger) log(level string, msg string, fields ...Field) {
-	l.logCtx(context.Background(), level, msg, fields...)
-}
-
-func (l *Logger) logCtx(ctx context.Context, level string, msg string, fields ...Field) {
+func (l *Logger) log(level string, msg string) {
 	if level < l.level {
 		return
 	}
@@ -73,82 +68,34 @@ func (l *Logger) logCtx(ctx context.Context, level string, msg string, fields ..
 	}
 }
 
-func (l *Logger) debug(msg string, fields ...Field) {
-	l.log("DEBUG", msg, fields...)
+func (l *Logger) debug(msg string) {
+	l.log("DEBUG", msg)
 }
 
-func (l *Logger) info(msg string, fields ...Field) {
-	l.log("INFO", msg, fields...)
+func (l *Logger) info(msg string) {
+	l.log("INFO", msg)
 }
 
-func (l *Logger) warn(msg string, fields ...Field) {
-	l.log("WARN", msg, fields...)
+func (l *Logger) warn(msg string) {
+	l.log("WARN", msg)
 }
 
-func (l *Logger) error(msg string, fields ...Field) {
-	l.log("ERROR", msg, fields...)
+func (l *Logger) error(msg string) {
+	l.log("ERROR", msg)
 }
 
-func (l *Logger) debugCtx(ctx context.Context, msg string, fields ...Field) {
-	l.logCtx(ctx, "DEBUG", msg, fields...)
+func (l *Logger) Debug(msg string) {
+	l.debug(msg)
 }
 
-func (l *Logger) infoCtx(ctx context.Context, msg string, fields ...Field) {
-	l.logCtx(ctx, "INFO", msg, fields...)
+func (l *Logger) Info(msg string) {
+	l.info(msg)
 }
 
-func (l *Logger) warnCtx(ctx context.Context, msg string, fields ...Field) {
-	l.logCtx(ctx, "WARN", msg, fields...)
+func (l *Logger) Warn(msg string) {
+	l.warn(msg)
 }
 
-func (l *Logger) errorCtx(ctx context.Context, msg string, fields ...Field) {
-	l.logCtx(ctx, "ERROR", msg, fields...)
-}
-
-func Debug(msg string, fields ...Field) {
-	if defaultLogger != nil {
-		defaultLogger.debug(msg, fields...)
-	}
-}
-
-func Info(msg string, fields ...Field) {
-	if defaultLogger != nil {
-		defaultLogger.info(msg, fields...)
-	}
-}
-
-func Warn(msg string, fields ...Field) {
-	if defaultLogger != nil {
-		defaultLogger.warn(msg, fields...)
-	}
-}
-
-func Error(msg string, fields ...Field) {
-	if defaultLogger != nil {
-		defaultLogger.error(msg, fields...)
-	}
-}
-
-func DebugCtx(ctx context.Context, msg string, fields ...Field) {
-	if defaultLogger != nil {
-		defaultLogger.debugCtx(ctx, msg, fields...)
-	}
-}
-
-func InfoCtx(ctx context.Context, msg string, fields ...Field) {
-	if defaultLogger != nil {
-		defaultLogger.infoCtx(ctx, msg, fields...)
-	}
-}
-
-func WarnCtx(ctx context.Context, msg string, fields ...Field) {
-	if defaultLogger != nil {
-		defaultLogger.warnCtx(ctx, msg, fields...)
-	}
-}
-
-func ErrorCtx(ctx context.Context, msg string, fields ...Field) {
-	if defaultLogger != nil {
-		defaultLogger.errorCtx(ctx, msg, fields...)
-	}
+func (l *Logger) Error(msg string) {
+	l.error(msg)
 }
