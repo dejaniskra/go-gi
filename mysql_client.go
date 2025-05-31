@@ -106,6 +106,19 @@ func newDbConnection(cfg *config.DBConnection) (*sql.DB, error) {
 	return db, nil
 }
 
+func (c *MySQLClient) Ping(ctx context.Context) error {
+	if err := c.Writer.PingContext(ctx); err != nil {
+		return fmt.Errorf("writer DB ping failed: %w", err)
+	}
+
+	if c.Reader != c.Writer {
+		if err := c.Reader.PingContext(ctx); err != nil {
+			return fmt.Errorf("reader DB ping failed: %w", err)
+		}
+	}
+	return nil
+}
+
 func (c *MySQLClient) Close() error {
 	if err := c.Writer.Close(); err != nil {
 		return err
