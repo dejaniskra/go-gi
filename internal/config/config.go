@@ -6,30 +6,51 @@ import (
 	"os"
 )
 
+type DBRoleConfig struct {
+	Writer DBConnection  `json:"writer"`
+	Reader *DBConnection `json:"reader"`
+}
+
+type DBConnection struct {
+	User            string  `json:"user"`
+	Password        string  `json:"password"`
+	Host            string  `json:"host"`
+	Port            string  `json:"port"`
+	DBName          string  `json:"db_name"`
+	Options         *string `json:"options"`
+	MaxOpenConns    *int    `json:"max_open_connections"` // max number of open connections
+	MaxIdleConns    *int    `json:"max_idle_connections"` // max number of idle connections
+	ConnMaxLifetime *int    `json:"max_life_time"`        // seconds
+}
+
 type Protocols struct {
 	HTTP1 bool `json:"http_1"`
 	HTTP2 bool `json:"http_2"`
 }
+
 type Timeouts struct {
 	ReadRequest       *int `json:"read_request"`
 	ReadRequestHeader *int `json:"read_request_header"`
 	ResponseWrite     *int `json:"response_write"`
 	Idle              *int `json:"idle"`
 }
+
 type Http struct {
 	Port           *int       `json:"port"`
 	Protocols      *Protocols `json:"protocols"`
 	Timeouts       *Timeouts  `json:"timeouts"`
 	MaxHeaderBytes *int       `json:"max_header_bytes"`
 }
+
 type Log struct {
 	Level  string `json:"level"`
 	Format string `json:"format"`
 }
 
 type Config struct {
-	Http *Http `json:"http"`
-	Log  *Log  `json:"log"`
+	Http  *Http                    `json:"http"`
+	MySQL map[string]*DBRoleConfig `json:"mysql"`
+	Log   *Log                     `json:"log"`
 }
 
 var cfg *Config
