@@ -54,12 +54,23 @@ type DynamoConfig struct {
 	Endpoint  *string `json:"endpoint"`
 }
 
+type MongoRoleConfig struct {
+	Writer *MongoConfig
+	Reader *MongoConfig // optional
+}
+
+type MongoConfig struct {
+	URI            string
+	ReadPreference string // e.g., "primary", "secondaryPreferred", etc.
+}
+
 type Config struct {
-	Http     *Http                    `json:"http"`
-	MySQL    map[string]*DBRoleConfig `json:"mysql"`
-	Postgres map[string]*DBRoleConfig `json:"postgres"`
-	Dynamo   map[string]*DynamoConfig `json:"dynamo"`
-	Log      *Log                     `json:"log"`
+	Http     *Http                       `json:"http"`
+	MySQL    map[string]*DBRoleConfig    `json:"mysql"`
+	Postgres map[string]*DBRoleConfig    `json:"postgres"`
+	Dynamo   map[string]*DynamoConfig    `json:"dynamo"`
+	Mongo    map[string]*MongoRoleConfig `json:"mongo"`
+	Log      *Log                        `json:"log"`
 }
 
 var cfg *Config
