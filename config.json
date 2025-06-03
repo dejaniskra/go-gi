@@ -83,6 +83,14 @@
       }
     }
   },
+  "dynamo": {
+    "default": {
+      "region": "us-east-1",
+      "access_key": "access_key",
+      "secret_key": "secret_key",
+      "endpoint": "http://localhost:8000"
+    }
+  },
   "log": {
     "level": "info",
     "format": "json"

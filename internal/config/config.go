@@ -47,10 +47,18 @@ type Log struct {
 	Format string `json:"format"`
 }
 
+type DynamoConfig struct {
+	Region    string  `json:"region"`
+	AccessKey string  `json:"access_key"`
+	SecretKey string  `json:"secret_key"`
+	Endpoint  *string `json:"endpoint"`
+}
+
 type Config struct {
 	Http     *Http                    `json:"http"`
 	MySQL    map[string]*DBRoleConfig `json:"mysql"`
 	Postgres map[string]*DBRoleConfig `json:"postgres"`
+	Dynamo   map[string]*DynamoConfig `json:"dynamo"`
 	Log      *Log                     `json:"log"`
 }
 
