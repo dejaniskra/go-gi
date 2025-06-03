@@ -3,73 +3,57 @@ package gogi
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/sqs"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/sqs"
 )
 
-type SQSQueue struct {
-	client   *sqs.SQS
+type SQSJobQueue struct {
+	client   *sqs.Client
 	queueURL string
 }
 
-func NewSQSQueue(sess *session.Session, queueURL string) *SQSQueue {
-	return &SQSQueue{
-		client:   sqs.New(sess),
-		queueURL: queueURL,
-	}
+func NewSQSJobQueue(client *sqs.Client, queueURL string) *SQSJobQueue {
+	return &SQSJobQueue{client: client, queueURL: queueURL}
 }
 
-func (q *SQSQueue) SendJob(ctx context.Context, job Job) error {
+func (q *SQSJobQueue) SendJob(ctx context.Context, job *Job) error {
 	data, err := json.Marshal(job)
 	if err != nil {
 		return err
 	}
-	_, err = q.client.SendMessageWithContext(ctx, &sqs.SendMessageInput{
+	_, err = q.client.SendMessage(ctx, &sqs.SendMessageInput{
 		QueueUrl:    aws.String(q.queueURL),
 		MessageBody: aws.String(string(data)),
 	})
 	return err
 }
 
-func (q *SQSQueue) ReceiveJobs(ctx context.Context, handler func(Job) error) error {
-	go func() {
-		for {
-			select {
-			case <-ctx.Done():
-				return
-			default:
-				out, err := q.client.ReceiveMessageWithContext(ctx, &sqs.ReceiveMessageInput{
-					QueueUrl:            aws.String(q.queueURL),
-					MaxNumberOfMessages: aws.Int64(5),
-					WaitTimeSeconds:     aws.Int64(10),
-				})
-				if err != nil {
-					GetLogger().Debug(fmt.Sprintf("SQS receive error: %v", err))
-					continue
-				}
+func (q *SQSJobQueue) ReceiveJobs(ctx context.Context, handler func(*Job) error) error {
+	resp, err := q.client.ReceiveMessage(ctx, &sqs.ReceiveMessageInput{
+		QueueUrl:            aws.String(q.queueURL),
+		MaxNumberOfMessages: 10,
+		WaitTimeSeconds:     5,
+	})
+	if err != nil {
+		return err
+	}
 
-				for _, msg := range out.Messages {
-					var job Job
-					if err := json.Unmarshal([]byte(*msg.Body), &job); err != nil {
-						GetLogger().Debug(fmt.Sprintf("Failed to unmarshal SQS job: %v", err))
-						continue
-					}
-					if err := handler(job); err != nil {
-						GetLogger().Debug(fmt.Sprintf("SQS job handler error: %v", err))
-					}
-					_, err = q.client.DeleteMessage(&sqs.DeleteMessageInput{
-						QueueUrl:      aws.String(q.queueURL),
-						ReceiptHandle: msg.ReceiptHandle,
-					})
-					if err != nil {
-						GetLogger().Debug(fmt.Sprintf("Failed to delete SQS message: %v", err))
-					}
-				}
-			}
+	for _, msg := range resp.Messages {
+		var job Job
+		if err := json.Unmarshal([]byte(*msg.Body), &job); err != nil {
+			return err
 		}
-	}()
+		if err := handler(&job); err != nil {
+			return err
+		}
+		_, err = q.client.DeleteMessage(ctx, &sqs.DeleteMessageInput{
+			QueueUrl:      aws.String(q.queueURL),
+			ReceiptHandle: msg.ReceiptHandle,
+		})
+		if err != nil {
+			return err
+		}
+	}
 	return nil
 }
