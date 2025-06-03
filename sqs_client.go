@@ -36,7 +36,7 @@ func WithEndpoint(endpoint string) SQLOpt {
 	}
 }
 
-func NewSQSClient(ctx context.Context, queueName, region string, opts ...SQLOpt) (*SQSClient, error) {
+func GetSQSClient(ctx context.Context, queueName, region string, opts ...SQLOpt) (*SQSClient, error) {
 	options := &SQSClientOptions{}
 	for _, opt := range opts {
 		opt(options)
