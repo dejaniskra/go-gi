@@ -64,12 +64,25 @@ type MongoConfig struct {
 	ReadPreference string // e.g., "primary", "secondaryPreferred", etc.
 }
 
+type RedisConnection struct {
+	Addr     string
+	Username string
+	Password string
+	DB       int
+}
+
+type RedisRoleConfig struct {
+	Writer *RedisConnection
+	Reader *RedisConnection // Optional
+}
+
 type Config struct {
 	Http     *Http                       `json:"http"`
 	MySQL    map[string]*DBRoleConfig    `json:"mysql"`
 	Postgres map[string]*DBRoleConfig    `json:"postgres"`
 	Dynamo   map[string]*DynamoConfig    `json:"dynamo"`
 	Mongo    map[string]*MongoRoleConfig `json:"mongo"`
+	Redis    map[string]*RedisRoleConfig `json:"redis"`
 	Log      *Log                        `json:"log"`
 }
 
