@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"log"
 	"time"
 
 	"github.com/dejaniskra/go-gi/internal/config"
@@ -103,8 +102,7 @@ func newPgConnection(cfg *config.DBConnection) (*sql.DB, error) {
 	if err := db.Ping(); err != nil {
 		return nil, err
 	}
-
-	log.Printf("[Postgres] Connected to %s:%s/%s", cfg.Host, cfg.Port, cfg.DBName)
+	GetLogger().Debug(fmt.Sprintf("[Postgres] Connected to %s:%s/%s", cfg.Host, cfg.Port, cfg.DBName))
 	return db, nil
 }
 

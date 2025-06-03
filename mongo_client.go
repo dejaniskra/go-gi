@@ -3,7 +3,6 @@ package gogi
 import (
 	"context"
 	"fmt"
-	"log"
 	"time"
 
 	"github.com/dejaniskra/go-gi/internal/config"
@@ -68,22 +67,20 @@ func newMongoConnection(cfg *config.MongoConfig, readPref string) (*mongo.Client
 
 	opts := options.Client().ApplyURI(cfg.URI)
 
-	if readPref != "" {
-		switch readPref {
-		case "primary":
-			opts.SetReadPreference(readpref.Primary())
-		case "primaryPreferred":
-			opts.SetReadPreference(readpref.PrimaryPreferred())
-		case "secondary":
-			opts.SetReadPreference(readpref.Secondary())
-		case "secondaryPreferred":
-			opts.SetReadPreference(readpref.SecondaryPreferred())
-		case "nearest":
-			opts.SetReadPreference(readpref.Nearest())
-		default:
-			log.Printf("[Mongo] Unknown read preference: %s, defaulting to primary", readPref)
-			opts.SetReadPreference(readpref.Primary())
-		}
+	switch readPref {
+	case "primary":
+		opts.SetReadPreference(readpref.Primary())
+	case "primaryPreferred":
+		opts.SetReadPreference(readpref.PrimaryPreferred())
+	case "secondary":
+		opts.SetReadPreference(readpref.Secondary())
+	case "secondaryPreferred":
+		opts.SetReadPreference(readpref.SecondaryPreferred())
+	case "nearest":
+		opts.SetReadPreference(readpref.Nearest())
+	default:
+		GetLogger().Debug(fmt.Sprintf("[Mongo] Unknown read preference: %s, defaulting to primary", readPref))
+		opts.SetReadPreference(readpref.Primary())
 	}
 
 	client, err := mongo.Connect(ctx, opts)
@@ -95,7 +92,7 @@ func newMongoConnection(cfg *config.MongoConfig, readPref string) (*mongo.Client
 		return nil, err
 	}
 
-	log.Printf("[Mongo] Connected to %s", cfg.URI)
+	GetLogger().Debug(fmt.Sprintf("[Mongo] Connected to %s", cfg.URI))
 	return client, nil
 }
 
@@ -121,60 +118,97 @@ func (c *MongoClient) Close(ctx context.Context) error {
 	return nil
 }
 
-// ---------- Helpers ----------
+// ---------- Query Helpers ----------
 
 func (c *MongoClient) FindOne(
 	ctx context.Context,
-	db string,
-	coll string,
+	db, coll string,
 	filter any,
 	dest any,
 	opts ...*options.FindOneOptions,
 ) error {
-	message := fmt.Sprintf("[Mongo] FindOne: %s.%s | filter=%v", db, coll, filter)
-	GetLogger().Debug(message)
-
-	err := c.Reader.Database(db).Collection(coll).
-		FindOne(ctx, filter, opts...).
-		Decode(dest)
+	GetLogger().Debug(fmt.Sprintf("[Mongo] FindOne: %s.%s | filter=%v", db, coll, filter))
+	err := c.Reader.Database(db).Collection(coll).FindOne(ctx, filter, opts...).Decode(dest)
 	if err == mongo.ErrNoDocuments {
-		return nil // match MySQL "no rows" behavior
+		return nil
 	}
 	return err
 }
 
 func (c *MongoClient) FindMany(
 	ctx context.Context,
-	db string,
-	coll string,
+	db, coll string,
 	filter any,
 	handle func(*mongo.Cursor) error,
 	opts ...*options.FindOptions,
 ) error {
-	message := fmt.Sprintf("[Mongo] FindMany: %s.%s | filter=%v", db, coll, filter)
-	GetLogger().Debug(message)
-
-	cursor, err := c.Reader.Database(db).Collection(coll).
-		Find(ctx, filter, opts...)
+	GetLogger().Debug(fmt.Sprintf("[Mongo] FindMany: %s.%s | filter=%v", db, coll, filter))
+	cur, err := c.Reader.Database(db).Collection(coll).Find(ctx, filter, opts...)
 	if err != nil {
 		return err
 	}
-	defer cursor.Close(ctx)
-
-	return handle(cursor)
+	defer cur.Close(ctx)
+	return handle(cur)
 }
 
 func (c *MongoClient) InsertOne(
 	ctx context.Context,
-	db string,
-	coll string,
+	db, coll string,
 	doc any,
 	opts ...*options.InsertOneOptions,
 ) (*mongo.InsertOneResult, error) {
-	message := fmt.Sprintf("[Mongo] InsertOne: %s.%s", db, coll)
-	GetLogger().Debug(message)
-
+	GetLogger().Debug(fmt.Sprintf("[Mongo] InsertOne: %s.%s", db, coll))
 	return c.Writer.Database(db).Collection(coll).InsertOne(ctx, doc, opts...)
+}
+
+func (c *MongoClient) InsertMany(
+	ctx context.Context,
+	db, coll string,
+	docs []any,
+	opts ...*options.InsertManyOptions,
+) (*mongo.InsertManyResult, error) {
+	GetLogger().Debug(fmt.Sprintf("[Mongo] InsertMany: %s.%s", db, coll))
+	return c.Writer.Database(db).Collection(coll).InsertMany(ctx, docs, opts...)
+}
+
+func (c *MongoClient) UpdateOne(
+	ctx context.Context,
+	db, coll string,
+	filter, update any,
+	opts ...*options.UpdateOptions,
+) (*mongo.UpdateResult, error) {
+	GetLogger().Debug(fmt.Sprintf("[Mongo] UpdateOne: %s.%s | filter=%v", db, coll, filter))
+	return c.Writer.Database(db).Collection(coll).UpdateOne(ctx, filter, update, opts...)
+}
+
+func (c *MongoClient) UpdateMany(
+	ctx context.Context,
+	db, coll string,
+	filter, update any,
+	opts ...*options.UpdateOptions,
+) (*mongo.UpdateResult, error) {
+	GetLogger().Debug(fmt.Sprintf("[Mongo] UpdateMany: %s.%s | filter=%v", db, coll, filter))
+	return c.Writer.Database(db).Collection(coll).UpdateMany(ctx, filter, update, opts...)
+}
+
+func (c *MongoClient) DeleteOne(
+	ctx context.Context,
+	db, coll string,
+	filter any,
+	opts ...*options.DeleteOptions,
+) (*mongo.DeleteResult, error) {
+	GetLogger().Debug(fmt.Sprintf("[Mongo] DeleteOne: %s.%s | filter=%v", db, coll, filter))
+	return c.Writer.Database(db).Collection(coll).DeleteOne(ctx, filter, opts...)
+}
+
+func (c *MongoClient) DeleteMany(
+	ctx context.Context,
+	db, coll string,
+	filter any,
+	opts ...*options.DeleteOptions,
+) (*mongo.DeleteResult, error) {
+	GetLogger().Debug(fmt.Sprintf("[Mongo] DeleteMany: %s.%s | filter=%v", db, coll, filter))
+	return c.Writer.Database(db).Collection(coll).DeleteMany(ctx, filter, opts...)
 }
 
 func (c *MongoClient) WithTransaction(

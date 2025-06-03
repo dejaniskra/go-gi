@@ -3,7 +3,7 @@ package gogi
 import (
 	"context"
 	"fmt"
-	"log"
+
 	"sync"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -73,7 +73,7 @@ func newDynamoClient(cfg *appconfig.DynamoConfig) (*DynamoClient, error) {
 	}
 
 	client := dynamodb.NewFromConfig(awsCfg)
-	log.Printf("[DynamoDB] Connected to region=%s endpoint=%v", cfg.Region, cfg.Endpoint)
+	GetLogger().Debug(fmt.Sprintf("[DynamoDB] Connected to region=%s endpoint=%v", cfg.Region, cfg.Endpoint))
 	return &DynamoClient{Client: client}, nil
 }
 
