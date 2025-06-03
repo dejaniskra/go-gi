@@ -12,9 +12,9 @@ type RedisJobQueue struct {
 	name   string
 }
 
-func NewRedisQueue(redisClient *redis.Client, name string) *RedisJobQueue {
+func NewRedisQueue(redisClient *RedisClient, name string) *RedisJobQueue {
 	return &RedisJobQueue{
-		client: redisClient,
+		client: redisClient.Writer, // always write to writer side
 		name:   name,
 	}
 }

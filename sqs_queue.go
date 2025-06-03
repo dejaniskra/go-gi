@@ -9,11 +9,11 @@ import (
 )
 
 type SQSJobQueue struct {
-	client   *sqs.Client
+	client   *SQSClient
 	queueURL string
 }
 
-func NewSQSJobQueue(client *sqs.Client, queueURL string) *SQSJobQueue {
+func NewSQSJobQueue(client *SQSClient, queueURL string) *SQSJobQueue {
 	return &SQSJobQueue{client: client, queueURL: queueURL}
 }
 
@@ -22,15 +22,15 @@ func (q *SQSJobQueue) SendJob(ctx context.Context, job *Job) error {
 	if err != nil {
 		return err
 	}
-	_, err = q.client.SendMessage(ctx, &sqs.SendMessageInput{
-		QueueUrl:    aws.String(q.queueURL),
+	_, err = q.client.Client.SendMessage(ctx, &sqs.SendMessageInput{
+		QueueUrl:    aws.String(q.client.QueueURL),
 		MessageBody: aws.String(string(data)),
 	})
 	return err
 }
 
 func (q *SQSJobQueue) ReceiveJobs(ctx context.Context, handler func(*Job) error) error {
-	resp, err := q.client.ReceiveMessage(ctx, &sqs.ReceiveMessageInput{
+	resp, err := q.client.Client.ReceiveMessage(ctx, &sqs.ReceiveMessageInput{
 		QueueUrl:            aws.String(q.queueURL),
 		MaxNumberOfMessages: 10,
 		WaitTimeSeconds:     5,
@@ -47,7 +47,7 @@ func (q *SQSJobQueue) ReceiveJobs(ctx context.Context, handler func(*Job) error)
 		if err := handler(&job); err != nil {
 			return err
 		}
-		_, err = q.client.DeleteMessage(ctx, &sqs.DeleteMessageInput{
+		_, err = q.client.Client.DeleteMessage(ctx, &sqs.DeleteMessageInput{
 			QueueUrl:      aws.String(q.queueURL),
 			ReceiptHandle: msg.ReceiptHandle,
 		})
