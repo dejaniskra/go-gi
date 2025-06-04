@@ -13,6 +13,6 @@ type Job struct {
 
 // JobQueue defines the interface all queue backends must implement.
 type JobQueue interface {
-	SendJob(ctx context.Context, job Job) error
+	SendJob(ctx context.Context, job *Job) error
 	ReceiveJobs(ctx context.Context, handler func(Job) error) error
 }

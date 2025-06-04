@@ -77,7 +77,7 @@ func (c *HTTPClient) Execute(req *HTTPClientRequest) (*HTTPClientResponse, error
 		parsedURL.RawQuery = q.Encode()
 	}
 
-	httpReq, err := http.NewRequest(string(req.Method), fullURL, body)
+	httpReq, err := http.NewRequest(string(req.Method), parsedURL.String(), body)
 
 	if err != nil {
 		return nil, err
